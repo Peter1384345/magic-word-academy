@@ -1,0 +1,26 @@
+{
+  "id": "essay1",
+  "title": "The Power of Words",
+  "author": "Unknown",
+  "category": "literature",
+  "grade": 13,
+  "paragraphs": [
+    {
+      "en": "Words have the power to inspire, to heal, and to transform lives.",
+      "cn": "语言有力量去激励、去治愈、去改变人生。"
+    },
+    {
+      "en": "Every word we speak carries energy that can either uplift or discourage others.",
+      "cn": "我们说的每一个词都携带着能量，可以激励或打击他人。"
+    },
+    {
+      "en": "When we choose our words carefully, we create a world of understanding and compassion.",
+      "cn": "当我们谨慎选择言辞时，我们创造了一个充满理解和同情的世界。"
+    },
+    {
+      "en": "The most beautiful words are those spoken with sincerity and love.",
+      "cn": "最美丽的语言是那些带着真诚和爱说出的。"
+    }
+  ],
+  "vocabulary": ["inspire", "heal", "transform", "energy", "uplift", "discourage", "compassion", "sincerity"]
+}

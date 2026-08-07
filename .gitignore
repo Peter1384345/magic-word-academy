@@ -1,0 +1,41 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# 大型外部数据源（不属于本项目代码）
+ecdict-repo/
+scripts/__pycache__/
+*.pyc
+
+# 临时文件
+count_tmp.ps1
+clone.log
+sel_book1_src.txt
+sel_book4_src.txt
+gen_grade11_12.cjs
+gen_words.cjs
+src/data/words/gen_grade*.py
+
+# 用户数据（运行时生成，不纳入版本控制）
+user/

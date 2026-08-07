@@ -1,0 +1,38 @@
+{
+  "id": "poem1",
+  "title": "The Road Not Taken",
+  "author": "Robert Frost",
+  "category": "literature",
+  "grade": 12,
+  "paragraphs": [
+    {
+      "en": "Two roads diverged in a yellow wood,",
+      "cn": "金黄的树林里分出两条路，"
+    },
+    {
+      "en": "And sorry I could not travel both",
+      "cn": "可惜我不能同时去涉足"
+    },
+    {
+      "en": "And be one traveler, long I stood",
+      "cn": "作为一个旅人，我久久伫立"
+    },
+    {
+      "en": "And looked down one as far as I could",
+      "cn": "向着一条路极目望去"
+    },
+    {
+      "en": "To where it bent in the undergrowth.",
+      "cn": "直到它消失在丛林深处。"
+    },
+    {
+      "en": "I took the one less traveled by,",
+      "cn": "我选择了人迹更少的那条路，"
+    },
+    {
+      "en": "And that has made all the difference.",
+      "cn": "而这使得一切变得不同。"
+    }
+  ],
+  "vocabulary": ["diverged", "travel", "traveler", "undergrowth", "difference"]
+}

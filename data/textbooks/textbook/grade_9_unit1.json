@@ -1,0 +1,33 @@
+{
+  "id": "grade_9_unit1",
+  "title": "I Used to Be Afraid of the Dark",
+  "category": "textbook",
+  "grade": 9,
+  "paragraphs": [
+    {
+      "en": "I used to be afraid of the dark. I couldn't sleep alone.",
+      "cn": "我过去害怕黑暗。我不能独自睡觉。"
+    },
+    {
+      "en": "But now I am brave. I can sleep by myself in my own room.",
+      "cn": "但现在我很勇敢。我可以自己一个人在自己的房间里睡觉。"
+    },
+    {
+      "en": "My sister used to be shy. She didn't like talking to strangers.",
+      "cn": "我妹妹过去很害羞。她不喜欢和陌生人说话。"
+    },
+    {
+      "en": "Now she is outgoing and makes friends easily. She has changed a lot.",
+      "cn": "现在她很外向，很容易交到朋友。她改变了很多。"
+    },
+    {
+      "en": "People change as they grow up. That is a natural part of life.",
+      "cn": "人们在成长过程中会改变。那是生命中很自然的一部分。"
+    },
+    {
+      "en": "We should accept our changes and become better every day.",
+      "cn": "我们应该接受自己的变化，每天都变得更好。"
+    }
+  ],
+  "vocabulary": ["afraid", "dark", "brave", "alone", "shy", "stranger", "outgoing", "change", "natural", "accept"]
+}

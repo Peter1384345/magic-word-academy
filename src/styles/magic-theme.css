@@ -1,0 +1,249 @@
+/* ============================================================
+   魔法学院主题全局样式 Magic Word Academy Theme
+   深紫星空 + 金色魔法阵风格（与开机动画一致）
+   ============================================================ */
+
+/* ---------- 引入 Google Fonts：Baloo 2（标题圆润）+ Quicksand（正文）---------- */
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap');
+
+/* ---------- 基础重置 ---------- */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+body {
+  /* 圆润字体设置 */
+  font-family: 'Quicksand', 'Baloo 2', system-ui, -apple-system, sans-serif;
+  /* 浅金色文字：在深紫背景上有良好对比 */
+  color: #FFE55C;
+  /* 深紫星空背景：与开机动画一致 */
+  background: radial-gradient(ellipse at center, #2D1B4E 0%, #1A0E2E 50%, #0D0718 100%);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+#root {
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- 背景星辰装饰（body 伪元素） ---------- */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    radial-gradient(2px 2px at 10% 20%, rgba(255, 215, 0, 0.8), transparent),
+    radial-gradient(1px 1px at 80% 15%, rgba(255, 255, 255, 0.9), transparent),
+    radial-gradient(2px 2px at 30% 70%, rgba(212, 181, 232, 0.7), transparent),
+    radial-gradient(1px 1px at 60% 85%, rgba(255, 215, 0, 0.6), transparent),
+    radial-gradient(1.5px 1.5px at 90% 60%, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(1px 1px at 45% 40%, rgba(212, 181, 232, 0.6), transparent),
+    radial-gradient(2px 2px at 15% 90%, rgba(255, 215, 0, 0.5), transparent),
+    radial-gradient(1px 1px at 70% 30%, rgba(168, 230, 207, 0.6), transparent),
+    radial-gradient(1.5px 1.5px at 25% 50%, rgba(255, 215, 0, 0.4), transparent),
+    radial-gradient(1px 1px at 85% 75%, rgba(255, 255, 255, 0.7), transparent);
+  background-size: 100% 100%;
+  animation: starDrift 80s linear infinite;
+  opacity: 0.85;
+}
+
+/* ---------- 背景魔法阵装饰（body::after）---------- */
+body::after {
+  content: '';
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 800px;
+  height: 800px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 0;
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 500'%3E%3Ccircle cx='250' cy='250' r='240' fill='none' stroke='%23FFD700' stroke-opacity='0.08' stroke-width='1' stroke-dasharray='4 8'/%3E%3Ccircle cx='250' cy='250' r='200' fill='none' stroke='%23D4B5E8' stroke-opacity='0.1' stroke-width='1'/%3E%3Ccircle cx='250' cy='250' r='160' fill='none' stroke='%23FFD700' stroke-opacity='0.06' stroke-width='1' stroke-dasharray='2 4'/%3E%3Cpolygon points='250,100 386,325 114,325' fill='none' stroke='%23FFD700' stroke-opacity='0.08' stroke-width='1.5'/%3E%3Cpolygon points='250,400 114,175 386,175' fill='none' stroke='%23A8E6CF' stroke-opacity='0.08' stroke-width='1.5'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  animation: magicCircle 120s linear infinite;
+  opacity: 0.5;
+}
+
+/* 星尘缓慢漂移 */
+@keyframes starDrift {
+  0% { transform: translate(0, 0); }
+  50% { transform: translate(-15px, -10px); }
+  100% { transform: translate(0, 0); }
+}
+
+/* 魔法阵缓慢旋转 */
+@keyframes magicCircle {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* ---------- 毛玻璃卡片效果（深色版本） ---------- */
+.glass-card {
+  background: rgba(45, 27, 78, 0.55);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgba(255, 215, 0, 0.25);
+  border-radius: 1.25rem;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 215, 0, 0.1);
+}
+
+/* ---------- 金色发光按钮样式 ---------- */
+.magic-glow-btn {
+  background: linear-gradient(135deg, #FFD700 0%, #FFE55C 50%, #D4AF37 100%);
+  color: #2D1B4E;
+  border: 2px solid rgba(255, 215, 0, 0.7);
+  box-shadow:
+    0 0 20px rgba(255, 215, 0, 0.5),
+    0 4px 16px rgba(212, 175, 55, 0.4);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.magic-glow-btn:hover {
+  box-shadow:
+    0 0 30px rgba(255, 215, 0, 0.8),
+    0 6px 24px rgba(212, 175, 55, 0.5);
+  transform: translateY(-2px) scale(1.03);
+}
+
+.magic-glow-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* ---------- 自定义滚动条样式 ---------- */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(13, 7, 24, 0.5);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #D4AF37 0%, #FFD700 100%);
+  border-radius: 10px;
+  border: 2px solid rgba(13, 7, 24, 0.4);
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #FFD700 0%, #FFE55C 100%);
+}
+
+/* Firefox 滚动条 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #D4AF37 rgba(13, 7, 24, 0.5);
+}
+
+/* ---------- 标题字体 ---------- */
+h1,
+h2,
+h3,
+h4 {
+  font-family: 'Baloo 2', 'Quicksand', system-ui, sans-serif;
+  color: #FFD700;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-shadow: 0 0 12px rgba(255, 215, 0, 0.3);
+}
+
+/* ---------- 文本选中色 ---------- */
+::selection {
+  background: rgba(255, 215, 0, 0.4);
+  color: #FFF8E7;
+}
+
+/* ---------- 工具类：金色发光边框 ---------- */
+.glow-gold-border {
+  border: 2px solid rgba(255, 215, 0, 0.5);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.3), inset 0 0 12px rgba(255, 215, 0, 0.1);
+}
+
+/* ---------- 工具类：柔光呼吸动画 ---------- */
+.breathe {
+  animation: breathe 4s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3), inset 0 0 12px rgba(255, 215, 0, 0.08);
+  }
+  50% {
+    box-shadow: 0 0 35px rgba(255, 215, 0, 0.6), inset 0 0 18px rgba(255, 215, 0, 0.15);
+  }
+}
+
+/* ---------- 尊重减弱动画偏好 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================================
+   答题粒子动画 Particle Effect
+   ============================================================ */
+
+/* 答对粒子爆炸：从中心向四周散开并向上飘升 */
+@keyframes particleExplode {
+  0% {
+    transform: translate(0, 0) scale(0);
+    opacity: 1;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--tx), var(--ty)) scale(1);
+    opacity: 0;
+  }
+}
+
+/* 答错粒子飘落：从顶部缓慢下落 + 左右偏移 + 旋转 */
+@keyframes particleFall {
+  0% {
+    transform: translateY(0) translateX(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(200px) translateX(var(--tx)) rotate(var(--rot));
+    opacity: 0;
+  }
+}
+
+/* 文字弹出：放大回弹后渐隐 */
+@keyframes textPop {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}

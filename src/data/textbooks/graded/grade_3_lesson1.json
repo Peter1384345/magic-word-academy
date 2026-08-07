@@ -1,0 +1,37 @@
+{
+  "id": "grade_3_lesson1",
+  "title": "The Magic Garden",
+  "category": "graded",
+  "grade": 3,
+  "paragraphs": [
+    {
+      "en": "Once upon a time, there was a magic garden behind the old castle.",
+      "cn": "从前，在古老的城堡后面有一个魔法花园。"
+    },
+    {
+      "en": "In the garden, beautiful flowers could sing sweet songs every morning.",
+      "cn": "在花园里，美丽的花朵每天清晨都会唱起甜美的歌。"
+    },
+    {
+      "en": "A little girl named Lily loved to play with the friendly animals there.",
+      "cn": "一个名叫莉莉的小女孩喜欢和那里友好的动物们一起玩耍。"
+    },
+    {
+      "en": "One day, she found a shiny key under a big apple tree.",
+      "cn": "有一天，她在一棵大苹果树下发现了一把闪闪发光的钥匙。"
+    },
+    {
+      "en": "The key opened a tiny door hidden among the green leaves.",
+      "cn": "这把钥匙打开了藏在绿叶中的一扇小门。"
+    },
+    {
+      "en": "Behind the door lived a kind fairy who gave Lily a special gift.",
+      "cn": "门后住着一位善良的仙女，她送给莉莉一份特别的礼物。"
+    },
+    {
+      "en": "From that day on, Lily could understand the language of all the flowers.",
+      "cn": "从那天起，莉莉就能听懂所有花朵的语言了。"
+    }
+  ],
+  "vocabulary": ["garden", "castle", "flower", "animal", "key", "door", "leaf", "fairy", "gift", "song"]
+}

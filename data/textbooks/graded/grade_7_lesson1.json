@@ -1,0 +1,29 @@
+{
+  "id": "grade_7_lesson1",
+  "title": "My First Day at Magic School",
+  "category": "graded",
+  "grade": 7,
+  "paragraphs": [
+    {
+      "en": "It was my first day at the Magic Academy, and I was both excited and nervous.",
+      "cn": "这是我在魔法学院的第一天，我既兴奋又紧张。"
+    },
+    {
+      "en": "The school building looked like an ancient castle with tall towers and mysterious windows.",
+      "cn": "学校建筑看起来像一座古老的城堡，有高高的塔楼和神秘的窗户。"
+    },
+    {
+      "en": "My teacher, Professor Moon, welcomed us with a warm smile and a wave of her wand.",
+      "cn": "我的老师，月亮教授，用温暖的微笑和挥舞魔杖欢迎我们。"
+    },
+    {
+      "en": "She told us that learning magic requires patience, practice, and courage.",
+      "cn": "她告诉我们学习魔法需要耐心、练习和勇气。"
+    },
+    {
+      "en": "I knew that this year would be an unforgettable adventure.",
+      "cn": "我知道这一年将是一次难忘的冒险。"
+    }
+  ],
+  "vocabulary": ["excited", "nervous", "ancient", "castle", "mysterious", "professor", "patience", "practice", "courage", "adventure"]
+}

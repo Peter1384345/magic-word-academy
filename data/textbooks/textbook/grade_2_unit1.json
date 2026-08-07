@@ -1,0 +1,25 @@
+{
+  "id": "grade_2_unit1",
+  "title": "My Family",
+  "category": "textbook",
+  "grade": 2,
+  "paragraphs": [
+    {
+      "en": "Look at my family photo. This is my father.",
+      "cn": "看我的全家福照片。这是我的爸爸。"
+    },
+    {
+      "en": "He is tall. He is a teacher.",
+      "cn": "他很高。他是一名老师。"
+    },
+    {
+      "en": "This is my mother. She is beautiful.",
+      "cn": "这是我的妈妈。她很漂亮。"
+    },
+    {
+      "en": "She is a doctor. I love my family.",
+      "cn": "她是一名医生。我爱我的家庭。"
+    }
+  ],
+  "vocabulary": ["family", "father", "mother", "tall", "teacher", "doctor", "beautiful", "love"]
+}

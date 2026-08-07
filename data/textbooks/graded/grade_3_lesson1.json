@@ -1,0 +1,25 @@
+{
+  "id": "grade_3_lesson1",
+  "title": "The Magic Garden",
+  "category": "graded",
+  "grade": 3,
+  "paragraphs": [
+    {
+      "en": "Once upon a time, there was a magic garden behind the old castle.",
+      "cn": "从前，在古老的城堡后面有一个魔法花园。"
+    },
+    {
+      "en": "In the garden, there were beautiful flowers that could sing and dance.",
+      "cn": "花园里有会唱歌跳舞的美丽花朵。"
+    },
+    {
+      "en": "A little girl named Lily found the garden one sunny morning.",
+      "cn": "一个阳光明媚的早晨，一个叫莉莉的小女孩发现了这个花园。"
+    },
+    {
+      "en": "She was very happy to see the magical flowers and talked to them every day.",
+      "cn": "她很高兴看到这些魔法花朵，每天都和它们说话。"
+    }
+  ],
+  "vocabulary": ["magic", "garden", "castle", "beautiful", "flowers", "sing", "dance", "happy"]
+}

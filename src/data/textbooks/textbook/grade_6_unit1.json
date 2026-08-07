@@ -1,0 +1,29 @@
+{
+  "id": "grade_6_unit1",
+  "title": "How Do You Go to School?",
+  "category": "textbook",
+  "grade": 6,
+  "paragraphs": [
+    {
+      "en": "How do you go to school? I go to school by bike.",
+      "cn": "你怎么去上学？我骑自行车上学。"
+    },
+    {
+      "en": "My father goes to work by car. It is fast.",
+      "cn": "我爸爸开车上班。它很快。"
+    },
+    {
+      "en": "My mother goes to work by bus. She takes the No. 5 bus.",
+      "cn": "我妈妈乘公共汽车上班。她乘坐5路公共汽车。"
+    },
+    {
+      "en": "Sometimes I walk to the park with my friends. It is good exercise.",
+      "cn": "有时我和朋友们步行去公园。这是很好的锻炼。"
+    },
+    {
+      "en": "We should follow the traffic rules and stay safe on the road.",
+      "cn": "我们应该遵守交通规则，在路上注意安全。"
+    }
+  ],
+  "vocabulary": ["bike", "car", "bus", "walk", "fast", "exercise", "traffic", "rule", "safe", "road"]
+}

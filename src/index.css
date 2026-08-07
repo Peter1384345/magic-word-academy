@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+/* ============================================================
+   魔法学院主题色配置 - 深紫星空 + 金色魔法阵风格
+   与开机动效 MagicSplash 保持一致
+   ============================================================ */
+@theme {
+  /* 深紫色系背景 */
+  --color-primary: #D4B5E8;
+  --color-primary-light: #E8D5F5;
+  --color-primary-dark: #B894D4;
+  --color-gold: #FFD700;
+  --color-gold-light: #FFE55C;
+  --color-gold-dark: #D4AF37;
+  --color-cream: #FFF8E7;
+  --color-cream-light: #FFFCF5;
+  --color-mint: #A8E6CF;
+  --color-mint-light: #C8F0DD;
+  --color-mint-dark: #8AD4B5;
+  --color-magic-purple: #4A2A6B;
+  --color-magic-pink: #FFB6C1;
+
+  /* 新增：深空紫色调（背景专用） */
+  --color-cosmos-deep: #0D0718;
+  --color-cosmos: #1A0E2E;
+  --color-cosmos-light: #2D1B4E;
+  --color-cosmos-card: rgba(45, 27, 78, 0.55);
+
+  --font-magic: "Baloo 2", "Comic Sans MS", system-ui, sans-serif;
+  --font-rounded: "Quicksand", system-ui, sans-serif;
+
+  --shadow-magic: 0 8px 32px rgba(255, 215, 0, 0.2);
+  --shadow-glow-gold: 0 0 20px rgba(255, 215, 0, 0.6);
+  --shadow-glow-soft: 0 0 30px rgba(255, 215, 0, 0.3);
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4);
+  --shadow-card-gold: 0 4px 24px rgba(255, 215, 0, 0.2);
+
+  --animate-float: float 3s ease-in-out infinite;
+  --animate-twinkle: twinkle 2s ease-in-out infinite;
+  --animate-sparkle: sparkle 1.5s ease-in-out infinite;
+  --animate-pop-in: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.3; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); }
+  }
+  @keyframes sparkle {
+    0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
+    50% { opacity: 1; transform: scale(1) rotate(180deg); }
+  }
+  @keyframes popIn {
+    0% { opacity: 0; transform: scale(0.8); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+}

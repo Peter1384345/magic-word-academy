@@ -1,0 +1,29 @@
+{
+  "id": "grade_3_unit1",
+  "title": "Let's Go to School",
+  "category": "textbook",
+  "grade": 3,
+  "paragraphs": [
+    {
+      "en": "Good morning, boys and girls! Welcome to our school.",
+      "cn": "早上好，同学们！欢迎来到我们学校。"
+    },
+    {
+      "en": "Our school is big and beautiful. We have many classrooms.",
+      "cn": "我们的学校又大又漂亮。我们有很多教室。"
+    },
+    {
+      "en": "Look, this is my classroom. It is clean and bright.",
+      "cn": "看，这是我的教室。它又干净又明亮。"
+    },
+    {
+      "en": "I like my school. I like my teachers and friends.",
+      "cn": "我喜欢我的学校。我喜欢我的老师和朋友们。"
+    },
+    {
+      "en": "Let's study together and have fun!",
+      "cn": "让我们一起学习，快乐成长！"
+    }
+  ],
+  "vocabulary": ["school", "morning", "welcome", "classroom", "clean", "bright", "study", "together"]
+}

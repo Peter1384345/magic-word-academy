@@ -1,0 +1,29 @@
+{
+  "id": "grade_1_unit1",
+  "title": "Hello! I'm Zoom.",
+  "category": "textbook",
+  "grade": 1,
+  "paragraphs": [
+    {
+      "en": "Hello! I'm Zoom. What's your name?",
+      "cn": "你好！我是祖姆。你叫什么名字？"
+    },
+    {
+      "en": "My name is Zip. Nice to meet you!",
+      "cn": "我的名字是济普。很高兴认识你！"
+    },
+    {
+      "en": "Nice to meet you, too.",
+      "cn": "我也很高兴认识你。"
+    },
+    {
+      "en": "Goodbye, Zoom!",
+      "cn": "再见，祖姆！"
+    },
+    {
+      "en": "Bye, Zip!",
+      "cn": "拜拜，济普！"
+    }
+  ],
+  "vocabulary": ["hello", "name", "goodbye", "bye", "nice", "meet"]
+}

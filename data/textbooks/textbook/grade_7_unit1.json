@@ -1,0 +1,33 @@
+{
+  "id": "grade_7_unit1",
+  "title": "Can You Play the Guitar?",
+  "category": "textbook",
+  "grade": 7,
+  "paragraphs": [
+    {
+      "en": "Welcome to our clubs! Can you play the guitar?",
+      "cn": "欢迎来到我们的俱乐部！你会弹吉他吗？"
+    },
+    {
+      "en": "Yes, I can. I can also play the piano. Music is my favorite.",
+      "cn": "是的，我会。我还会弹钢琴。音乐是我的最爱。"
+    },
+    {
+      "en": "Can you swim? No, I can't. But I can play basketball very well.",
+      "cn": "你会游泳吗？不，我不会。但我篮球打得很好。"
+    },
+    {
+      "en": "What club do you want to join? I want to join the art club.",
+      "cn": "你想加入什么俱乐部？我想加入美术俱乐部。"
+    },
+    {
+      "en": "I like drawing pictures. It makes me happy and relaxed.",
+      "cn": "我喜欢画画。它让我感到快乐和放松。"
+    },
+    {
+      "en": "Come and join us! We have many interesting activities.",
+      "cn": "快来加入我们吧！我们有很多有趣的活动。"
+    }
+  ],
+  "vocabulary": ["guitar", "piano", "swim", "basketball", "club", "join", "draw", "activity", "interesting", "relaxed"]
+}

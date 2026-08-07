@@ -1,0 +1,33 @@
+{
+  "id": "grade_8_unit1",
+  "title": "What's the Matter?",
+  "category": "textbook",
+  "grade": 8,
+  "paragraphs": [
+    {
+      "en": "What's the matter with you? You don't look well today.",
+      "cn": "你怎么了？你今天看起来气色不太好。"
+    },
+    {
+      "en": "I have a headache and a sore throat. I feel terrible.",
+      "cn": "我头痛而且嗓子痛。我感觉糟透了。"
+    },
+    {
+      "en": "You should drink more water and get some rest.",
+      "cn": "你应该多喝水并好好休息。"
+    },
+    {
+      "en": "Maybe you have a fever. Let me take your temperature.",
+      "cn": "也许你发烧了。让我给你量一下体温。"
+    },
+    {
+      "en": "Thank you, doctor. I will take the medicine and stay in bed.",
+      "cn": "谢谢你，医生。我会吃药并卧床休息。"
+    },
+    {
+      "en": "Don't worry. You will get better soon. Take care of yourself.",
+      "cn": "别担心。你很快就会好起来的。照顾好自己。"
+    }
+  ],
+  "vocabulary": ["matter", "headache", "sore", "throat", "fever", "temperature", "medicine", "rest", "terrible", "care"]
+}

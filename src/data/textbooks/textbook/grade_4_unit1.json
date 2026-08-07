@@ -1,0 +1,29 @@
+{
+  "id": "grade_4_unit1",
+  "title": "My Home",
+  "category": "textbook",
+  "grade": 4,
+  "paragraphs": [
+    {
+      "en": "Welcome to my home! It is very nice.",
+      "cn": "欢迎来到我的家！它非常漂亮。"
+    },
+    {
+      "en": "Look, this is the living room. It is big and clean.",
+      "cn": "看，这是客厅。它又大又干净。"
+    },
+    {
+      "en": "That is my bedroom. It is small but cozy.",
+      "cn": "那是我的卧室。它很小但很温馨。"
+    },
+    {
+      "en": "The kitchen is next to the living room. My mother cooks there.",
+      "cn": "厨房在客厅旁边。我妈妈在那里做饭。"
+    },
+    {
+      "en": "I love my home. It is the best place in the world.",
+      "cn": "我爱我的家。它是世界上最好的地方。"
+    }
+  ],
+  "vocabulary": ["home", "living", "room", "bedroom", "kitchen", "clean", "cozy", "next", "cook", "world"]
+}

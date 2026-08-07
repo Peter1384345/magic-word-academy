@@ -1,0 +1,65 @@
+{
+  "id": "poem1",
+  "title": "The Road Not Taken",
+  "category": "literature",
+  "author": "Robert Frost",
+  "paragraphs": [
+    {
+      "en": "Two roads diverged in a yellow wood,",
+      "cn": "金黄的林中分出两条路，"
+    },
+    {
+      "en": "And sorry I could not travel both",
+      "cn": "可惜我不能同时涉足，"
+    },
+    {
+      "en": "And be one traveler, long I stood",
+      "cn": "身为旅人，我久久伫立，"
+    },
+    {
+      "en": "And looked down one as far as I could",
+      "cn": "极目眺望其中一条路，"
+    },
+    {
+      "en": "To where it bent in the undergrowth;",
+      "cn": "直到它隐入灌木丛中；"
+    },
+    {
+      "en": "Then took the other, as just as fair,",
+      "cn": "于是我选择了另一条，同样美丽，"
+    },
+    {
+      "en": "And having perhaps the better claim,",
+      "cn": "或许更值得一走，"
+    },
+    {
+      "en": "Because it was grassy and wanted wear;",
+      "cn": "因为它芳草萋萋，少有人迹；"
+    },
+    {
+      "en": "Though as for that the passing there",
+      "cn": "虽然在那经过之时，"
+    },
+    {
+      "en": "Had worn them really about the same,",
+      "cn": "两条路其实相差无几，"
+    },
+    {
+      "en": "I shall be telling this with a sigh",
+      "cn": "多年后我将叹息着诉说，"
+    },
+    {
+      "en": "Two roads diverged in a wood, and I—",
+      "cn": "林中分出两条路，而我——"
+    },
+    {
+      "en": "I took the one less traveled by,",
+      "cn": "我选择了人迹更少的那一条，"
+    },
+    {
+      "en": "And that has made all the difference.",
+      "cn": "从此决定了我一生的道路。"
+    }
+  ],
+  "vocabulary": ["road", "diverge", "wood", "travel", "traveler", "undergrowth", "fair", "claim", "grassy", "wear", "sigh", "difference"]
+}

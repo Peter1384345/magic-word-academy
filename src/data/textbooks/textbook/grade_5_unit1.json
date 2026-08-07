@@ -1,0 +1,33 @@
+{
+  "id": "grade_5_unit1",
+  "title": "My Favorite Season",
+  "category": "textbook",
+  "grade": 5,
+  "paragraphs": [
+    {
+      "en": "There are four seasons in a year: spring, summer, autumn and winter.",
+      "cn": "一年有四个季节：春、夏、秋、冬。"
+    },
+    {
+      "en": "My favorite season is spring. The weather is warm and nice.",
+      "cn": "我最喜欢的季节是春天。天气温暖宜人。"
+    },
+    {
+      "en": "Trees are green and flowers are everywhere. Birds sing in the trees.",
+      "cn": "树木翠绿，到处都是鲜花。鸟儿在树上歌唱。"
+    },
+    {
+      "en": "In summer, it is hot. We can swim in the pool.",
+      "cn": "夏天很热。我们可以在游泳池里游泳。"
+    },
+    {
+      "en": "In autumn, leaves turn yellow and red. It is a harvest season.",
+      "cn": "秋天树叶变成黄色和红色。这是一个收获的季节。"
+    },
+    {
+      "en": "In winter, it is cold and snowy. We can make snowmen.",
+      "cn": "冬天又冷又下雪。我们可以堆雪人。"
+    }
+  ],
+  "vocabulary": ["season", "spring", "summer", "autumn", "winter", "warm", "weather", "flower", "harvest", "snowy"]
+}
