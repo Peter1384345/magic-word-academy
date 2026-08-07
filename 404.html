@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>魔法单词学院 - 404跳转</title>
+    <script>
+      // GitHub Pages SPA 404 降级：把路径跳转到带 hash 的形式
+      // 配合 HashRouter 使用，确保用户直接访问子路径时能正确跳回首页
+      var l = window.location;
+      var base = l.pathname.replace(/\/?$/, '/');
+      var hash = l.hash;
+      var search = l.search;
+      if (hash.indexOf('#/') !== 0) {
+        // 将原路径编码到 hash 中
+        var newHash = '#/' + (base.replace(/^\/magic-word-academy\//, '')).replace(/^\//, '') + (search ? search : '');
+        if (hash) newHash += '&from=' + encodeURIComponent(hash);
+        l.replace(l.origin + base + newHash);
+      }
+    </script>
+  </head>
+  <body>
+    <p>Redirecting...</p>
+  </body>
+</html>
