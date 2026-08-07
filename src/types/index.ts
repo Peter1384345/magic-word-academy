@@ -56,6 +56,25 @@ export interface TextbookParagraph {
   cn: string;
 }
 
+// 单词熟练度（熟悉/不熟悉/不知道 三档）
+export type ProficiencyLevel = 'familiar' | 'unfamiliar' | 'unknown'
+// 熟练度分数字面：familiar = 1（满分）、unfamiliar = 0.5、unknown = 0
+export const PROFICIENCY_SCORE: Record<ProficiencyLevel, number> = {
+  familiar: 1,
+  unfamiliar: 0.5,
+  unknown: 0,
+}
+export const PROFICIENCY_LABEL: Record<ProficiencyLevel, string> = {
+  familiar: '熟悉',
+  unfamiliar: '不熟悉',
+  unknown: '不知道',
+}
+export const PROFICIENCY_EMOJI: Record<ProficiencyLevel, string> = {
+  familiar: '🌟',
+  unfamiliar: '💭',
+  unknown: '❓',
+}
+
 // 课文分类
 export type TextbookCategory = 'graded' | 'textbook' | 'literature';
 

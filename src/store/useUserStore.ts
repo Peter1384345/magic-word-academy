@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { UserProfile, Pet } from '../types'
+import type { UserProfile, Pet, ProficiencyLevel } from '../types'
+import { PROFICIENCY_SCORE } from '../types'
 
 // 宠物列表（按年级解锁）
 export const PETS: Pet[] = [
@@ -34,7 +35,7 @@ const defaultProfile: UserProfile = {
   todayGoal: 50,
 }
 
-interface UserState {
+export interface UserState {
   userProfile: UserProfile
   isFirstTime: boolean
   unlockedPets: string[] // 已解锁宠物 id 列表
@@ -43,6 +44,10 @@ interface UserState {
   testAttempts: Record<number, number>
   // 各年级上次测试结果（grade -> TestResult）
   lastTestResult: Record<number, TestResult>
+  // 单词熟练度记录：{ username: { word: ProficiencyLevel } }
+  // 每个用户独立记录每个单词的熟悉程度
+  wordProficiency: Record<string, Record<string, ProficiencyLevel>>
+
   // 设置用户名
   setUserName: (name: string) => void
   // 设置当前年级
@@ -67,6 +72,10 @@ interface UserState {
   recordTestResult: (grade: number, score: number, total: number, passed: boolean) => void
   // 重置某年级的测试尝试次数
   resetTestAttempts: (grade: number) => void
+  // 记录单个单词的熟练度（按用户维度）
+  recordWordProficiency: (username: string, word: string, level: ProficiencyLevel) => void
+  // 获取某用户某单词的熟练度（缺省返回 unknown）
+  getWordProficiency: (username: string, word: string) => ProficiencyLevel
 }
 
 export const useUserStore = create<UserState>()(
@@ -78,6 +87,7 @@ export const useUserStore = create<UserState>()(
       currentPetId: 'bunny',
       testAttempts: {},
       lastTestResult: {},
+      wordProficiency: {},
 
       setUserName: (name) =>
         set((state) => ({
@@ -164,6 +174,30 @@ export const useUserStore = create<UserState>()(
           delete next[grade]
           return { testAttempts: next }
         }),
+
+      recordWordProficiency: (username, word, level) =>
+        set((state) => {
+          const userMap = { ...(state.wordProficiency[username] ?? {}) }
+          // 仅当熟练度提升或未记录时更新；例如熟悉(1) > 不熟悉(0.5) > 不知道(0)
+          const prev = userMap[word]
+          if (prev) {
+            const prevScore = PROFICIENCY_SCORE[prev]
+            const newScore = PROFICIENCY_SCORE[level]
+            if (newScore <= prevScore) return {} // 不降级记录（不改动）
+          }
+          userMap[word] = level
+          return {
+            wordProficiency: {
+              ...state.wordProficiency,
+              [username]: userMap,
+            },
+          }
+        }),
+
+      getWordProficiency: (username, word): ProficiencyLevel => {
+        const state = useUserStore.getState() as UserState
+        return state.wordProficiency[username]?.[word] ?? 'unknown'
+      },
     }),
     {
       name: 'magic-word-academy-user',

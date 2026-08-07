@@ -89,6 +89,8 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       accounts: { [ADMIN_USERNAME]: seedAdmin },
+      // currentUser 不持久化：刷新页面后强制重新登录
+      // 确保用户每次进入都需验证账户密码
       currentUser: null,
       error: null,
 
@@ -394,10 +396,18 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'magic-word-academy-auth',
+      // 仅持久化账户列表（accounts），currentUser 每次刷新重置为 null
+      // 保证刷新后必须重新输入密码登录
+      partialize: (state) => ({ accounts: state.accounts }),
       // 反序列化时保证种子管理员存在
       onRehydrateStorage: () => (state) => {
         if (state && !state.accounts[ADMIN_USERNAME]) {
           state.accounts[ADMIN_USERNAME] = seedAdmin
+        }
+        // 反序列化后清除登录态，强制重新登录
+        if (state) {
+          state.currentUser = null
+          state.error = null
         }
       },
     },

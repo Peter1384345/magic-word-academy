@@ -1,3 +1,4 @@
+import type { UserState } from '../store/useUserStore'
 import { PETS, useUserStore } from '../store/useUserStore'
 
 interface PetCompanionProps {
@@ -17,7 +18,7 @@ export default function PetCompanion({
   showName = false,
   className = '',
 }: PetCompanionProps) {
-  const currentPetId = useUserStore((s) => s.currentPetId)
+  const currentPetId = useUserStore((s: UserState) => s.currentPetId)
   const targetId = petId ?? currentPetId
   const pet = PETS.find((p) => p.id === targetId) ?? PETS[0]
 
