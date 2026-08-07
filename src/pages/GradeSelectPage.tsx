@@ -27,7 +27,7 @@ export default function GradeSelectPage() {
   const navigate = useNavigate()
   const { currentUser, setCurrentGrade } = useAuthStore()
   const { setUserGrade, setUserName } = useUserStore()
-  const { setCurrentGrade: setWordGrade } = useWordStore()
+  const { setGrade: setWordGrade } = useWordStore()
   const [selected, setSelected] = useState<number | null>(null)
 
   // 未登录保护

@@ -605,7 +605,8 @@ function UsersTab({
       {/* 编辑弹窗 */}
       {editingUser && (
         <div className="fixed inset-0 bg-cosmos-deep/70 backdrop-blur-sm z-40 flex items-center justify-center p-4" onClick={() => setEditingUser(null)}>
-          <MagicCard className="w-full max-w-md p-6 animate-pop-in" glow onClick={(e) => e.stopPropagation()}>
+          <div onClick={(e) => e.stopPropagation()} className="w-full max-w-md">
+          <MagicCard className="p-6 animate-pop-in" glow>
             <h3 className="font-magic font-bold text-xl text-gold-light mb-4">✏️ 编辑用户：{editingUser}</h3>
             <div className="space-y-4">
               <div>
@@ -628,13 +629,15 @@ function UsersTab({
               </div>
             </div>
           </MagicCard>
+          </div>
         </div>
       )}
 
       {/* 新建用户弹窗 */}
       {showCreate && (
         <div className="fixed inset-0 bg-cosmos-deep/70 backdrop-blur-sm z-40 flex items-center justify-center p-4" onClick={() => setShowCreate(false)}>
-          <MagicCard className="w-full max-w-md p-6 animate-pop-in" glow onClick={(e) => e.stopPropagation()}>
+          <div onClick={(e) => e.stopPropagation()} className="w-full max-w-md">
+          <MagicCard className="p-6 animate-pop-in" glow>
             <h3 className="font-magic font-bold text-xl text-gold-light mb-4">➕ 新建用户</h3>
             <div className="space-y-4">
               <div>
@@ -662,6 +665,7 @@ function UsersTab({
               </div>
             </div>
           </MagicCard>
+          </div>
         </div>
       )}
     </div>

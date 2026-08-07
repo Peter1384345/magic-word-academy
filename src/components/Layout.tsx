@@ -183,7 +183,7 @@ export default function Layout() {
             {!collapsed && (
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-gold-light truncate">
-                  {currentUser?.username ?? userProfile.name}
+                  {currentAccount?.username ?? currentUser ?? userProfile.name}
                 </p>
                 {isAdminUser ? (
                   <p className="text-[10px] text-magic-pink mt-0.5 font-semibold">

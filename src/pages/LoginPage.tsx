@@ -5,19 +5,10 @@ import { useUserStore } from '../store/useUserStore'
 
 type Mode = 'login' | 'register'
 
-const GRADE_LABELS: Record<number, string> = {
-  1: '小学一年级', 2: '小学二年级', 3: '小学三年级',
-  4: '小学四年级', 5: '小学五年级', 6: '小学六年级',
-  7: '初中一年级', 8: '初中二年级', 9: '初中三年级',
-  10: '高中一年级', 11: '高中二年级', 12: '高中三年级',
-  13: '大学英语四级', 14: '大学英语六级', 15: '雅思',
-  16: '托福', 17: 'GRE',
-}
-
 export default function LoginPage() {
   const navigate = useNavigate()
   const { login, register, error, clearError } = useAuthStore()
-  const { setUserName, setUserGrade } = useUserStore()
+  const { setUserName } = useUserStore()
 
   const [mode, setMode] = useState<Mode>('login')
   const [username, setUsername] = useState('')
