@@ -29,17 +29,137 @@ interface VortexStar {
 
 // ===== 八卦爻线配置（从下到上：初爻/中爻/上爻）=====
 // 阳爻=true（整条），阴爻=false（断开）
-// 八卦对应：乾☰ 兑☱ 离☲ 震☳ 巽☴ 坎☵ 艮☶ 坤☷
+// 先天八卦方位（上乾下坤 · 左离右坎）
+// 从顶(乾)顺时针环绕顺序：乾 → 巽 → 坎 → 艮 → 坤 → 震 → 离 → 兑
 const BAGUA_YAO: { name: string; lines: [boolean, boolean, boolean] }[] = [
-  { name: '☰', lines: [true, true, true] },   // 乾
-  { name: '☱', lines: [true, true, false] },  // 兑
-  { name: '☲', lines: [true, false, true] },  // 离
-  { name: '☳', lines: [true, false, false] }, // 震
-  { name: '☴', lines: [false, true, true] },  // 巽
-  { name: '☵', lines: [false, true, false] }, // 坎
-  { name: '☶', lines: [false, false, true] }, // 艮
-  { name: '☷', lines: [false, false, false] },// 坤
+  { name: '☰', lines: [true, true, true] },   // 乾 南(上)
+  { name: '☴', lines: [false, true, true] },  // 巽 西南(右上)
+  { name: '☵', lines: [false, true, false] }, // 坎 西(右)
+  { name: '☶', lines: [false, false, true] }, // 艮 西北(右下)
+  { name: '☷', lines: [false, false, false] },// 坤 北(下)
+  { name: '☳', lines: [true, false, false] }, // 震 东北(左下)
+  { name: '☲', lines: [true, false, true] },  // 离 东(左)
+  { name: '☱', lines: [true, true, false] },  // 兑 东南(左上)
 ]
+
+// ===== 12 星座星图 · 经典黄道恒星点阵（坐标归一化 ±0.6 空间）=====
+// mags 值越小 = 恒星越亮（类视星等 1-4）
+// lines 为星点索引对，表示传统连线
+interface Constellation {
+  cn: string
+  latin: string
+  color: string
+  stars: [number, number][]
+  mags: number[]
+  lines: [number, number][]
+}
+
+const ZODIAC: Constellation[] = [
+  // 0 · 白羊座 Aries · 娄宿三连星 + 小星群
+  {
+    cn: '白羊', latin: 'Ari', color: '#FFE28A',
+    stars: [[0, -0.48], [0.22, -0.18], [0.38, 0.08], [0.44, 0.38], [0.16, -0.36], [-0.06, -0.18], [0.54, 0.2]],
+    mags:  [1.2, 1.8, 2.2, 3.0, 3.5, 3.8, 3.6],
+    lines: [[0, 1], [1, 2], [2, 3], [4, 0], [5, 1]],
+  },
+  // 1 · 金牛座 Taurus · 毕宿V形 + 昴星团（七姊妹）
+  {
+    cn: '金牛', latin: 'Tau', color: '#FFC89B',
+    stars: [[-0.52, -0.26], [-0.22, -0.1], [-0.02, 0.16], [0.18, 0.02], [0.44, -0.1], [0.22, 0.3], [-0.18, 0.48], [0.36, -0.32], [0.58, -0.5]],
+    mags:  [1.0, 2.0, 2.2, 3.2, 3.5, 3.6, 3.8, 3.3, 4.0],
+    lines: [[0, 1], [1, 2], [2, 3], [3, 4], [2, 5], [5, 6], [7, 4], [8, 7]],
+  },
+  // 2 · 双子座 Gemini · 北河二北河三 双人形
+  {
+    cn: '双子', latin: 'Gem', color: '#FFF7C0',
+    stars: [[-0.5, -0.44], [-0.42, 0.04], [-0.28, 0.32], [0.3, -0.44], [0.4, 0.04], [0.34, 0.32], [-0.32, 0.58], [0.34, 0.58], [0.02, 0.18], [-0.32, -0.22], [0.3, -0.2]],
+    mags:  [1.2, 1.6, 2.4, 1.2, 1.4, 2.8, 3.4, 3.4, 3.5, 3.8, 3.8],
+    lines: [[0, 1], [1, 2], [2, 6], [3, 4], [4, 5], [5, 7], [1, 8], [4, 8], [9, 1], [10, 4]],
+  },
+  // 3 · 巨蟹座 Cancer · 鬼宿积尸气（星团形）
+  {
+    cn: '巨蟹', latin: 'Cnc', color: '#D4E3FF',
+    stars: [[-0.2, -0.26], [0.02, -0.36], [0.22, -0.26], [-0.3, -0.02], [-0.1, 0.08], [0.1, 0.08], [0.3, -0.02], [-0.14, 0.38], [0.14, 0.38], [-0.02, 0.0], [-0.06, 0.18]],
+    mags:  [3.2, 3.5, 3.2, 3.8, 3.8, 3.8, 3.8, 3.5, 3.5, 4.0, 4.0],
+    lines: [[0, 1], [1, 2], [3, 4], [4, 5], [5, 6], [7, 4], [5, 8]],
+  },
+  // 4 · 狮子座 Leo · 轩辕镰刀（问号形）+ 狮尾三角
+  {
+    cn: '狮子', latin: 'Leo', color: '#FFD9A0',
+    stars: [[-0.5, -0.14], [-0.46, -0.42], [-0.22, -0.58], [0.02, -0.52], [0.22, -0.28], [0.46, 0.0], [0.5, 0.26], [0.24, 0.42], [-0.12, 0.32], [-0.42, 0.22], [0.02, -0.28]],
+    mags:  [1.4, 2.2, 2.2, 3.0, 3.2, 2.0, 1.8, 2.8, 3.5, 3.8, 3.4],
+    lines: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 10], [10, 0], [0, 9], [4, 5], [5, 6], [6, 7], [7, 8], [0, 8]],
+  },
+  // 5 · 室女座 Virgo · 角宿 Y 形麦穗
+  {
+    cn: '室女', latin: 'Vir', color: '#E7D7FF',
+    stars: [[-0.42, -0.36], [-0.14, -0.08], [0.1, 0.18], [0.34, 0.38], [0.54, 0.46], [0.02, -0.36], [-0.46, 0.26], [-0.52, 0.46], [0.26, -0.3], [0.4, 0.1]],
+    mags:  [2.8, 3.0, 2.8, 2.6, 1.0, 3.4, 3.6, 3.8, 3.6, 3.4],
+    lines: [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [0, 6], [6, 7], [2, 9], [8, 5]],
+  },
+  // 6 · 天秤座 Libra · 氐宿秤形
+  {
+    cn: '天秤', latin: 'Lib', color: '#BFE6D0',
+    stars: [[-0.5, 0.1], [-0.3, 0.26], [0.02, 0.4], [0.3, 0.26], [0.5, 0.1], [0.02, -0.26], [0.02, -0.5], [-0.4, -0.08], [0.4, -0.08]],
+    mags:  [2.6, 2.8, 3.2, 2.8, 2.6, 3.4, 3.8, 3.4, 3.4],
+    lines: [[0, 1], [1, 2], [2, 3], [3, 4], [2, 5], [5, 6], [0, 7], [4, 8]],
+  },
+  // 7 · 天蝎座 Scorpius · 心宿S形蝎尾钩
+  {
+    cn: '天蝎', latin: 'Sco', color: '#FFB5B5',
+    stars: [[-0.56, -0.3], [-0.36, -0.08], [-0.14, 0.12], [0.06, 0.3], [0.3, 0.42], [0.5, 0.32], [0.46, 0.08], [0.26, -0.12], [0.06, -0.26], [-0.14, -0.46], [-0.34, -0.5], [-0.26, 0.3]],
+    mags:  [3.0, 2.6, 2.2, 1.0, 2.0, 2.6, 3.0, 3.2, 3.0, 2.8, 3.4, 3.8],
+    lines: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 8], [8, 9], [9, 10], [2, 11]],
+  },
+  // 8 · 射手座 Sagittarius · 斗宿 茶壶形
+  {
+    cn: '人马', latin: 'Sgr', color: '#C9D6FF',
+    stars: [[-0.4, -0.4], [-0.16, -0.4], [0.1, -0.4], [0.36, -0.2], [0.4, 0.06], [0.2, 0.22], [-0.06, 0.22], [-0.3, 0.08], [-0.4, -0.14], [0.36, 0.3], [-0.1, -0.08], [0.14, -0.1]],
+    mags:  [2.8, 2.8, 2.4, 2.2, 2.0, 2.8, 3.2, 3.2, 3.4, 3.5, 3.6, 3.6],
+    lines: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 0], [7, 10], [10, 11], [11, 4], [5, 9]],
+  },
+  // 9 · 摩羯座 Capricornus · 牛宿 三角形 + 鱼尾
+  {
+    cn: '摩羯', latin: 'Cap', color: '#CFE3FF',
+    stars: [[-0.5, 0.22], [-0.26, -0.1], [0.04, 0.06], [-0.1, 0.36], [-0.36, 0.42], [0.24, 0.12], [0.44, -0.1], [0.5, -0.36], [-0.08, -0.2]],
+    mags:  [3.0, 2.8, 2.4, 3.2, 3.4, 3.2, 3.0, 3.4, 3.8],
+    lines: [[0, 1], [1, 2], [2, 3], [3, 4], [0, 4], [2, 5], [5, 6], [6, 7], [8, 1]],
+  },
+  // 10 · 宝瓶座 Aquarius · 危宿 人形 + 水之折线
+  {
+    cn: '宝瓶', latin: 'Aqr', color: '#BDE4FF',
+    stars: [[-0.3, -0.5], [0.02, -0.46], [0.3, -0.5], [0.16, -0.2], [-0.1, -0.1], [-0.34, 0.1], [-0.14, 0.26], [0.1, 0.22], [0.06, 0.42], [-0.1, 0.58], [0.3, 0.42], [0.4, 0.16], [0.18, 0.02]],
+    mags:  [2.8, 2.8, 3.0, 2.6, 2.6, 3.2, 3.0, 2.8, 3.4, 3.8, 3.4, 3.2, 3.6],
+    lines: [[0, 1], [1, 2], [1, 3], [3, 4], [4, 5], [4, 6], [3, 12], [12, 7], [7, 8], [8, 9], [7, 10], [10, 11]],
+  },
+  // 11 · 双鱼座 Pisces · 壁宿 双鱼 绳索形
+  {
+    cn: '双鱼', latin: 'Psc', color: '#DFCFFF',
+    stars: [[-0.5, 0.2], [-0.4, -0.1], [-0.3, -0.36], [-0.06, -0.16], [0.2, -0.36], [0.4, -0.1], [0.5, 0.16], [0.34, 0.36], [0.1, 0.16], [-0.16, 0.3], [-0.4, 0.4], [-0.22, 0.06], [0.26, 0.02]],
+    mags:  [3.8, 3.6, 3.4, 4.0, 3.6, 3.2, 2.8, 3.6, 4.0, 3.8, 3.6, 4.0, 4.0],
+    lines: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 8], [8, 9], [9, 0], [3, 11], [11, 9], [8, 12], [12, 5]],
+  },
+]
+
+// ===== 颜色 / 位置 / 种子 工具函数 =====
+function hexToRgba(hex: string, a: number): string {
+  const h = hex.replace('#', '')
+  const full = h.length === 3 ? h.split('').map(c => c + c).join('') : h
+  const r = parseInt(full.slice(0, 2), 16)
+  const g = parseInt(full.slice(2, 4), 16)
+  const b = parseInt(full.slice(4, 6), 16)
+  return `rgba(${r}, ${g}, ${b}, ${Math.max(0, Math.min(1, a))})`
+}
+
+// 伪随机位置（确定性，基于种子索引，避免重渲染抖动）
+function pseudoRandPos(seed: number, w: number, h: number): [number, number] {
+  const n = Math.sin(seed * 9301 + 49297) * 233280
+  const u = n - Math.floor(n)
+  const m = Math.sin(seed * 1301 + 7919) * 233280
+  const v = m - Math.floor(m)
+  return [u * w, v * h]
+}
+function minWithSeed(a: number, b: number) { return Math.min(a, b) }
 
 // 绘制单个八卦的爻线
 function BaguaGlyph({ yao, color }: { yao: { name: string; lines: [boolean, boolean, boolean] }; color: string }) {
@@ -162,6 +282,116 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
           ctx.fillStyle = `hsla(${s.hue}, 100%, 80%, ${alpha})`
           ctx.beginPath(); ctx.arc(x, y, s.size, 0, Math.PI * 2); ctx.fill()
         })
+      }
+
+      // ========== 12 黄道星座 点状星图 ==========
+      // 布局参数：环半径保证在 SVG 法阵之外
+      const zodiacRing = Math.min(w, h) / 2 - 86
+      const zodiacScale = Math.max(60, Math.min(w, h) * 0.16)
+      // 出现进度：0s -> 2.5s 逐序点亮 12 宫
+      const reveal = Math.min(1, Math.max(0, (elapsed - 0.3) / 2.2))
+      // 连线淡入：1.5s -> 3s
+      const lineFade = Math.min(1, Math.max(0, (elapsed - 1.5) / 1.5))
+      // 淡出阶段
+      const fadeK = elapsed < 5 ? 1 : Math.max(0, 1 - (elapsed - 5) / 1)
+
+      ZODIAC.forEach((zodiac, zi) => {
+        const sectorReveal = Math.max(0, Math.min(1, (reveal * 12 - zi) * 1.2))
+        if (sectorReveal <= 0) return
+        const sectorAng = (30 * zi - 90) * Math.PI / 180
+        const sx = cx + Math.cos(sectorAng) * zodiacRing
+        const sy = cy + Math.sin(sectorAng) * zodiacRing
+
+        // 闪烁相位（每颗星独立 + 全局呼吸）
+        const twinkleBase = 0.65 + 0.35 * Math.sin(elapsed * 2.2 + zi * 1.73)
+
+        // --- 恒星渲染 ---
+        const starPts: { x: number; y: number }[] = []
+        zodiac.stars.forEach((st, si) => {
+          // 单颗星显现：随整体宫位进度 + 随机相位
+          const appearT = Math.max(0, Math.min(1, (sectorReveal * zodiac.stars.length - si) * 1.2))
+          if (appearT <= 0) {
+            starPts.push({ x: 0, y: 0 })
+            return
+          }
+          const px = sx + st[0] * zodiacScale
+          const py = sy + st[1] * zodiacScale
+          starPts.push({ x: px, y: py })
+
+          const mag = zodiac.mags[si] ?? 3
+          // 视星等 -> 像素尺寸（越亮越大）
+          const baseSize = Math.max(0.8, (5 - mag) * 0.9)
+          const twinkle = twinkleBase * (0.72 + 0.28 * Math.sin(elapsed * (3 + si * 0.37) + zi + si * 0.9))
+          const alpha = fadeK * appearT * (0.45 + 0.55 * twinkle)
+          const size = baseSize * (0.8 + 0.2 * twinkle)
+
+          // 外层柔光
+          const haloR = size * (mag <= 1.5 ? 8 : mag <= 2.2 ? 6 : 4)
+          const halo = ctx.createRadialGradient(px, py, 0, px, py, haloR)
+          halo.addColorStop(0, hexToRgba(zodiac.color, alpha * (mag <= 1.5 ? 0.75 : 0.5)))
+          halo.addColorStop(0.4, hexToRgba(zodiac.color, alpha * 0.18))
+          halo.addColorStop(1, 'rgba(0,0,0,0)')
+          ctx.fillStyle = halo
+          ctx.fillRect(px - haloR, py - haloR, haloR * 2, haloR * 2)
+
+          // 恒星本体
+          ctx.fillStyle = hexToRgba('#FFFFFF', alpha)
+          ctx.beginPath(); ctx.arc(px, py, size, 0, Math.PI * 2); ctx.fill()
+          // 亮星十字衍射 + 彩色核
+          if (mag <= 2.2) {
+            ctx.fillStyle = hexToRgba(zodiac.color, Math.min(1, alpha * 1.2))
+            ctx.beginPath(); ctx.arc(px, py, size * 0.55, 0, Math.PI * 2); ctx.fill()
+            // 十字光芒
+            const rayL = size * (mag <= 1.5 ? 10 : 6.5)
+            const rayA = hexToRgba(zodiac.color, alpha * 0.55)
+            ctx.strokeStyle = rayA
+            ctx.lineWidth = Math.max(0.6, size * 0.5)
+            ctx.beginPath()
+            ctx.moveTo(px - rayL, py); ctx.lineTo(px + rayL, py)
+            ctx.moveTo(px, py - rayL); ctx.lineTo(px, py + rayL)
+            ctx.stroke()
+          }
+        })
+
+        // --- 经典连线（淡入·较暗） ---
+        if (lineFade > 0 && sectorReveal >= 0.4) {
+          const lAlpha = fadeK * lineFade * Math.min(1, sectorReveal) * 0.42
+          ctx.strokeStyle = hexToRgba(zodiac.color, lAlpha)
+          ctx.lineWidth = 0.9
+          ctx.beginPath()
+          zodiac.lines.forEach(([a, b]) => {
+            const pa = starPts[a], pb = starPts[b]
+            if (!pa || !pb || (pa.x === 0 && pa.y === 0) || (pb.x === 0 && pb.y === 0)) return
+            ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y)
+          })
+          ctx.stroke()
+        }
+
+        // --- 亮星脉冲辉光（宫位主角高亮光环） ---
+        const pulse = 0.5 + 0.5 * Math.sin(elapsed * 1.4 + zi)
+        if (sectorReveal > 0.6 && fadeK > 0.2) {
+          zodiac.stars.forEach((st, si) => {
+            if ((zodiac.mags[si] ?? 4) > 1.6) return
+            const px = sx + st[0] * zodiacScale
+            const py = sy + st[1] * zodiacScale
+            const ringR = 8 + pulse * 6
+            ctx.strokeStyle = hexToRgba(zodiac.color, fadeK * 0.35 * (0.6 + 0.4 * pulse))
+            ctx.lineWidth = 1
+            ctx.beginPath(); ctx.arc(px, py, ringR, 0, Math.PI * 2); ctx.stroke()
+          })
+        }
+      })
+
+      // 背景星尘（额外密集散点，增强复杂感）
+      const bgStars = Math.floor(minWithSeed(w, h) * 0.15)
+      for (let i = 0; i < bgStars; i++) {
+        const [sx, sy] = pseudoRandPos(i, w, h)
+        const phase = elapsed * 1.8 + i * 0.127
+        const tw = 0.35 + 0.65 * Math.abs(Math.sin(phase))
+        const hue = 40 + ((i * 13) % 40)
+        const sz = 0.5 + ((i * 7) % 10) / 22
+        ctx.fillStyle = `hsla(${hue}, 90%, 85%, ${fadeK * tw * 0.55})`
+        ctx.beginPath(); ctx.arc(sx, sy, sz, 0, Math.PI * 2); ctx.fill()
       }
 
       // 中心光球
@@ -311,11 +541,16 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
             </linearGradient>
           </defs>
 
-          {/* ===== 最外圈：虚线旋转 ===== */}
+          {/* ===== 最外圈：虚线旋转 + 12 星座定位点 ===== */}
           <g>
-            <animateTransform attributeName="transform" type="rotate" from="0 250 250" to="360 250 250" dur="40s" repeatCount="indefinite" />
+            {/* 6秒内先飞速旋转3圈，末段缓停精确归位 0° */}
+            <animateTransform attributeName="transform" type="rotate"
+              values="0 250 250; 1080 250 250; 0 250 250"
+              keyTimes="0; 0.85; 1" calcMode="spline"
+              keySplines="0.12 0.78 0.28 1; 0.42 0 0.65 0.22"
+              dur="6s" fill="freeze" />
             <circle cx="250" cy="250" r="240" fill="none" stroke="rgba(255,215,0,0.3)" strokeWidth="1.5" strokeDasharray="4 8" filter="url(#goldGlow)" />
-            {/* 12方位星点 */}
+            {/* 12 黄道星位刻度 */}
             {Array.from({ length: 12 }).map((_, i) => {
               const a = (30 * i - 90) * Math.PI / 180
               const x = 250 + 240 * Math.cos(a)
@@ -324,14 +559,37 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
                 <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" begin={`${i * 0.15}s`} repeatCount="indefinite" />
               </circle>
             })}
+            {/* 12 星座文字与拉丁缩写（固定角度不跟随外圈旋转） */}
           </g>
+          {ZODIAC.map((z, i) => {
+            const a = (30 * i - 90) * Math.PI / 180
+            const x = 250 + 240 * Math.cos(a)
+            const y = 250 + 240 * Math.sin(a)
+            return (
+              <g key={`zlab-${i}`} opacity="0.55">
+                <text x={x} y={y - 10} textAnchor="middle"
+                  fontSize="11" fill={z.color} fontWeight="700"
+                  style={{ letterSpacing: 2 }}
+                  filter="url(#goldGlow)">{z.cn}</text>
+                <text x={x} y={y + 8} textAnchor="middle"
+                  fontSize="9" fill={z.color} opacity="0.75"
+                  fontFamily="'Courier New', monospace">
+                  {z.latin}
+                </text>
+              </g>
+            )
+          })}
 
           {/* ===== 第二层：六芒星背景圆 + 双三角形 ===== */}
           <circle cx="250" cy="250" r="210" fill="url(#hexGrad)" stroke="rgba(212,181,232,0.4)" strokeWidth="1.5" />
 
-          {/* 六芒星三角形1（顺时针旋转） */}
+          {/* 六芒星三角形1（顺时针·末段精确回 0°） */}
           <g>
-            <animateTransform attributeName="transform" type="rotate" from="0 250 250" to="360 250 250" dur="30s" repeatCount="indefinite" />
+            <animateTransform attributeName="transform" type="rotate"
+              values="0 250 250; 1800 250 250; 0 250 250"
+              keyTimes="0; 0.85; 1" calcMode="spline"
+              keySplines="0.1 0.8 0.25 1; 0.44 0 0.6 0.2"
+              dur="6s" fill="freeze" />
             <path d={d1} fill="none" stroke="url(#goldStroke)" strokeWidth="2.5" filter="url(#goldGlow)" />
             {/* 三角形顶点星 */}
             {TRI1.map((p, i) => (
@@ -342,9 +600,13 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
             ))}
           </g>
 
-          {/* 六芒星三角形2（逆时针旋转） */}
+          {/* 六芒星三角形2（逆时针·末段精确回 0°） */}
           <g>
-            <animateTransform attributeName="transform" type="rotate" from="360 250 250" to="0 250 250" dur="30s" repeatCount="indefinite" />
+            <animateTransform attributeName="transform" type="rotate"
+              values="0 250 250; -1800 250 250; 0 250 250"
+              keyTimes="0; 0.85; 1" calcMode="spline"
+              keySplines="0.1 0.8 0.25 1; 0.44 0 0.6 0.2"
+              dur="6s" fill="freeze" />
             <path d={d2} fill="none" stroke="rgba(168,230,207,0.8)" strokeWidth="2.5" filter="url(#goldGlow)" />
             {TRI2.map((p, i) => (
               <g key={i}>
@@ -360,21 +622,34 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
             fill="none" stroke="rgba(255,215,0,0.2)" strokeWidth="1"
           />
 
-          {/* ===== 第三层：八卦环 ===== */}
+          {/* ===== 第三层：先天八卦环 · 上乾下坤 ===== */}
+          {/* 虚线装饰环：旋转后归零 */}
           <circle cx="250" cy="250" r="120" fill="none" stroke="rgba(168,230,207,0.35)" strokeWidth="1" strokeDasharray="2 4" filter="url(#goldGlow)">
-            <animateTransform attributeName="transform" type="rotate" from="0 250 250" to="360 250 250" dur="20s" repeatCount="indefinite" />
+            <animateTransform attributeName="transform" type="rotate"
+              values="0 250 250; 1440 250 250; 0 250 250"
+              keyTimes="0; 0.85; 1" calcMode="spline"
+              keySplines="0.12 0.78 0.28 1; 0.42 0 0.65 0.22"
+              dur="6s" fill="freeze" />
           </circle>
 
-          {/* 八卦符号（精细爻线绘制） */}
+          {/* 八卦符号 · 先天八卦固定方位（无旋转·上乾下坤·左离右坎） */}
           <g>
-            <animateTransform attributeName="transform" type="rotate" from="0 250 250" to="360 250 250" dur="20s" repeatCount="indefinite" />
             {BAGUA_YAO.map((yao, i) => {
               const a = (45 * i - 90) * Math.PI / 180
               const x = 250 + 100 * Math.cos(a)
               const y = 250 + 100 * Math.sin(a)
+              // 宫位名：乾南 坤北 离东 坎西...（按索引对应）
+              const palace = ['乾·南', '巽·西南', '坎·西', '艮·西北', '坤·北', '震·东北', '离·东', '兑·东南'][i]
+              const isAxis = i === 0 || i === 4
               return (
                 <g key={i} transform={`translate(${x - 14}, ${y - 9})`}>
-                  <BaguaGlyph yao={yao} color="#A8E6CF" />
+                  <BaguaGlyph yao={yao} color={isAxis ? '#FFD166' : '#A8E6CF'} />
+                  <text x="14" y="34" textAnchor="middle"
+                    fontSize="7" opacity="0.6"
+                    fill={isAxis ? '#FFD166' : '#A8E6CF'}
+                    style={{ letterSpacing: 1 }}>
+                    {palace}
+                  </text>
                 </g>
               )
             })}
@@ -395,14 +670,18 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
 
           {/* ===== 中心：太极图 ===== */}
           <g>
-            <animateTransform attributeName="transform" type="rotate" from="0 250 250" to="-360 250 250" dur="12s" repeatCount="indefinite" />
+            <animateTransform attributeName="transform" type="rotate"
+              values="0 250 250; -1440 250 250; 0 250 250"
+              keyTimes="0; 0.85; 1" calcMode="spline"
+              keySplines="0.12 0.78 0.28 1; 0.42 0 0.65 0.22"
+              dur="6s" fill="freeze" />
             {/* 太极外圈光晕 */}
             <circle cx="250" cy="250" r="60" fill="none" stroke="rgba(255,215,0,0.6)" strokeWidth="2" filter="url(#strongGlow)" />
             <circle cx="250" cy="250" r="55" fill="none" stroke="rgba(255,215,0,0.3)" strokeWidth="1" />
-            {/* 阳半圆（浅） */}
+            {/* 阳半圆（浅，上） */}
             <path d="M250 195 A55 55 0 0 1 250 305 A27.5 27.5 0 0 0 250 250 A27.5 27.5 0 0 1 250 195"
               fill="url(#taijiYang)" />
-            {/* 阴半圆（深） */}
+            {/* 阴半圆（深，下） */}
             <path d="M250 195 A55 55 0 0 0 250 305 A27.5 27.5 0 0 1 250 250 A27.5 27.5 0 0 0 250 195"
               fill="url(#taijiYin)" />
             {/* 阳中阴点 */}
