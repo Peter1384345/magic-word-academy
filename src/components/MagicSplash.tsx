@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useReducer } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 interface MagicSplashProps {
   onFinished: () => void
@@ -200,6 +200,59 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
   const [phase, setPhase] = useState<'vortex' | 'summon' | 'reveal' | 'fadeout'>('vortex')
   const startTimeRef = useRef(0)
 
+  // ===== 用于在 Canvas 主动画帧中同步驱动 SVG 旋转（消除 animateTransform 时钟不同步问题）=====
+  // 各元素相对 Canvas 12 星座星图（5 圈 / 1800°）的转速比例。
+  // 同一 elapsed + 同一 cubic ease-out 公式，保证 10s 时绝对卡准 0°。
+  const ROT: Record<string, number> = {
+    outerRing: 6 / 5,      // 最外圈刻度环：+6 圈
+    hexGold: 8 / 5,        // 六芒金：+8 圈
+    hexCyan: -7 / 5,       // 六芒青：-7 圈
+    baguaDash: 4 / 5,      // 八卦虚线：+4 圈
+    baguaSymbol: 3 / 5,    // 八卦符号：+3 圈（结束归上乾下坤）
+    taiji: -2 / 5,         // 太极：-2 圈（结束阳上阴下）
+    zodiacLabel: 1,        // 12 星座标签：与星图完全同速（5 圈），用于算实时方位
+  }
+  const svgElRef = useRef<SVGSVGElement | null>(null)
+  const svgRotRef = useRef<Record<string, SVGElement | null>>({
+    outerRing: null,
+    hexGold: null,
+    hexCyan: null,
+    baguaDash: null,
+    baguaSymbol: null,
+    taiji: null,
+  })
+  const zodiacLabelGroupsRef = useRef<(SVGGElement | null)[]>([])
+  // 一次性建立 DOM 引用（在主动画首帧 lazy bind，避免 ref 回调与事件顺序的竞态）
+  const bindSvgRefs = () => {
+    const svg = svgElRef.current
+    if (!svg) return false
+    svgRotRef.current.outerRing = svg.querySelector('[data-role="outer-ring"]') as any
+    svgRotRef.current.hexGold = svg.querySelector('[data-role="hex-gold"]') as any
+    svgRotRef.current.hexCyan = svg.querySelector('[data-role="hex-cyan"]') as any
+    svgRotRef.current.baguaDash = svg.querySelector('[data-role="bagua-dash"]') as any
+    svgRotRef.current.baguaSymbol = svg.querySelector('[data-role="bagua-symbol"]') as any
+    svgRotRef.current.taiji = svg.querySelector('[data-role="taiji"]') as any
+    const labs: (SVGGElement | null)[] = []
+    for (let i = 0; i < 12; i++) {
+      labs.push(svg.querySelector(`[data-zodi-i="${i}"]`) as any)
+    }
+    zodiacLabelGroupsRef.current = labs
+    return !!(svgRotRef.current.outerRing && svgRotRef.current.taiji && labs[0])
+  }
+  // 统一旋转角计算（与 Canvas zRotDeg 完全同款公式），返回指定圈数比例对应的 deg
+  const calcSpinDeg = (elapsed: number, ratio: number) => {
+    const T_TOTAL = 10, T_SPIN = 8.5, SPIN_DEG_BASE = 1800
+    let t = elapsed
+    if (t <= 0) return 0
+    if (t <= T_SPIN) return SPIN_DEG_BASE * ratio * (t / T_SPIN)
+    if (t <= T_TOTAL) {
+      const u = (t - T_SPIN) / (T_TOTAL - T_SPIN)
+      const ease = 1 - (1 - u) * (1 - u) * (1 - u)
+      return SPIN_DEG_BASE * ratio * (1 - ease)
+    }
+    return 0
+  }
+
   useEffect(() => {
     startTimeRef.current = performance.now()
     const canvas = canvasRef.current
@@ -239,6 +292,36 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
       else if (elapsed < 4) setPhase('summon')
       else if (elapsed < 8) setPhase('reveal')
       else if (elapsed < 10) setPhase('fadeout')
+
+      // ===== 同步驱动 SVG 所有旋转元素：与 Canvas 同一 elapsed、同一 cubic ease-out，绝对锁步 =====
+      // 第一次绑不上就每帧重试（React 挂载 DOM 需要一帧）
+      if (!svgRotRef.current.outerRing) bindSvgRefs()
+      {
+        const outerDeg = calcSpinDeg(elapsed, ROT.outerRing)
+        const hexGoldDeg = calcSpinDeg(elapsed, ROT.hexGold)
+        const hexCyanDeg = calcSpinDeg(elapsed, ROT.hexCyan)
+        const baguaDashDeg = calcSpinDeg(elapsed, ROT.baguaDash)
+        const baguaSymbolDeg = calcSpinDeg(elapsed, ROT.baguaSymbol)
+        const taijiDeg = calcSpinDeg(elapsed, ROT.taiji)
+        const zodiDeg = calcSpinDeg(elapsed, ROT.zodiacLabel)
+        if (svgRotRef.current.outerRing) (svgRotRef.current.outerRing as any).setAttribute('transform', `rotate(${outerDeg.toFixed(3)} 250 250)`)
+        if (svgRotRef.current.hexGold) (svgRotRef.current.hexGold as any).setAttribute('transform', `rotate(${hexGoldDeg.toFixed(3)} 250 250)`)
+        if (svgRotRef.current.hexCyan) (svgRotRef.current.hexCyan as any).setAttribute('transform', `rotate(${hexCyanDeg.toFixed(3)} 250 250)`)
+        if (svgRotRef.current.baguaDash) (svgRotRef.current.baguaDash as any).setAttribute('transform', `rotate(${baguaDashDeg.toFixed(3)} 250 250)`)
+        if (svgRotRef.current.baguaSymbol) (svgRotRef.current.baguaSymbol as any).setAttribute('transform', `rotate(${baguaSymbolDeg.toFixed(3)} 250 250)`)
+        if (svgRotRef.current.taiji) (svgRotRef.current.taiji as any).setAttribute('transform', `rotate(${taijiDeg.toFixed(3)} 250 250)`)
+        // 12 星座标签：保持文字正向（不 rotate 文字本身），只按 zodiDeg 改位置沿环移动
+        const zRad = (zodiDeg * Math.PI) / 180
+        const R = 258
+        zodiacLabelGroupsRef.current.forEach((g, i) => {
+          if (!g) return
+          const baseAng = (30 * i - 90) * Math.PI / 180
+          const ang = baseAng + zRad
+          const x = 250 + R * Math.cos(ang)
+          const y = 250 + R * Math.sin(ang)
+          g.setAttribute('transform', `translate(${x.toFixed(2)}, ${y.toFixed(2)})`)
+        })
+      }
 
       // 背景渐变
       const bgGradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(w, h) / 1.2)
@@ -516,63 +599,6 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
   const wizardOpacity = phase === 'vortex' ? 0 : 1
   const titleOpacity = phase === 'reveal' || phase === 'fadeout' ? 1 : 0
 
-  // 12 星座文字标签：每帧按 Canvas 同款 cubic ease-out 公式计算实时位置，
-  // 文字本身不旋转（永远正向可读），仅修改 (x,y) 对齐到星图的实时方位，
-  // 因此旋转的是"位置"而不是文字本身，结束角度精确归零。
-  function ZodiacLabelsAnimated() {
-    const [, force] = useReducer(x => x + 1, 0)
-    useEffect(() => {
-      let raf = 0
-      const loop = () => {
-        force()
-        raf = requestAnimationFrame(loop)
-      }
-      raf = requestAnimationFrame(loop)
-      return () => cancelAnimationFrame(raf)
-    }, [])
-    // 计算当前位置：用同一时间基准——自组件挂载起 + dur=10s 循环
-    const T_TOTAL = 10
-    const T_SPIN = 8.5
-    const SPIN_DEG = 1800
-    // 使用挂载起始时间相对于组件自身，为了与主动画完全同步，改用全局时间戳即可（但主动画是 startTimeRef）
-    // 这里直接用"首次渲染后 0"的模拟：将 startTimeRef 当前值读出来
-    const elapsed = (performance.now() - (startTimeRef.current || performance.now())) / 1000
-    let zRotDeg = 0
-    if (elapsed <= 0) zRotDeg = 0
-    else if (elapsed <= T_SPIN) zRotDeg = SPIN_DEG * (elapsed / T_SPIN)
-    else if (elapsed <= T_TOTAL) {
-      const u = (elapsed - T_SPIN) / (T_TOTAL - T_SPIN)
-      const ease = 1 - (1 - u) * (1 - u) * (1 - u)
-      zRotDeg = SPIN_DEG * (1 - ease)
-    } else zRotDeg = 0
-    const zRotRad = (zRotDeg * Math.PI) / 180
-    // 标签放置在 SVG r=258 环上（外圈 r=240 的 18px 外），保证文字不遮挡刻度
-    const R = 258
-    return (
-      <g opacity={circleOpacity * 0.55}>
-        {ZODIAC.map((z, i) => {
-          const baseAng = (30 * i - 90) * Math.PI / 180
-          const ang = baseAng + zRotRad
-          const x = 250 + R * Math.cos(ang)
-          const y = 250 + R * Math.sin(ang)
-          return (
-            <g key={`zlab-${i}`} transform={`translate(${x}, ${y})`}>
-              <text x={0} y={-12} textAnchor="middle"
-                fontSize="11" fill={z.color} fontWeight="700"
-                style={{ letterSpacing: 2 }}
-                filter="url(#goldGlow)">{z.cn}</text>
-              <text x={0} y={6} textAnchor="middle"
-                fontSize="9" fill={z.color} opacity="0.75"
-                fontFamily="'Courier New', monospace">
-                {z.latin}
-              </text>
-            </g>
-          )
-        })}
-      </g>
-    )
-  }
-
   return (
     <div
       className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden"
@@ -591,7 +617,7 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
           transition: 'opacity 0.8s ease',
         }}
       >
-        <svg viewBox="0 0 500 500" className="w-full h-full" style={{ overflow: 'visible' }}>
+        <svg ref={svgElRef} viewBox="0 0 500 500" className="w-full h-full" style={{ overflow: 'visible' }}>
           {/* 发光滤镜 */}
           <defs>
             <filter id="goldGlow" x="-50%" y="-50%" width="200%" height="200%">
@@ -629,12 +655,7 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
           </defs>
 
           {/* ===== 最外圈：虚线旋转 + 12 星座定位点 ===== */}
-          <g>
-            {/* 10秒：0→8.5s 匀速 +6圈(2160°)，末 1.5s cubic ease-out 精确归零 */}
-            <animateTransform attributeName="transform" type="rotate"
-              keyTimes="0.000000; 0.166667; 0.333333; 0.500000; 0.666667; 0.833333; 1.000000"
-              values="0.000 250 250; 423.529 250 250; 847.059 250 250; 1270.588 250 250; 1694.118 250 250; 2117.647 250 250; 0.000 250 250"
-              calcMode="linear" dur="10s" fill="freeze" />
+          <g data-role="outer-ring">
             <circle cx="250" cy="250" r="240" fill="none" stroke="rgba(255,215,0,0.3)" strokeWidth="1.5" strokeDasharray="4 8" filter="url(#goldGlow)" />
             {/* 12 黄道星位刻度 */}
             {Array.from({ length: 12 }).map((_, i) => {
@@ -646,18 +667,37 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
               </circle>
             })}
           </g>
-          {/* 12 星座文字与拉丁缩写：按 Canvas +5 圈的实时旋转角定位，但文字本身保持静态可读角度 */}
-          <ZodiacLabelsAnimated />
+
+          {/* 12 星座文字与拉丁缩写：Canvas 主动画通过 data-zodi-i 定位并每帧更新 transform
+              —— 文字始终保持正向可读，位置沿环实时对齐到星图的旋转方位。 */}
+          <g opacity={circleOpacity * 0.55}>
+            {ZODIAC.map((z, i) => {
+              // t=0 时的初始位置（zodiDeg=0），后续 translate 会被 JS 覆写。
+              const baseAng = (30 * i - 90) * Math.PI / 180
+              const R = 258
+              const x = 250 + R * Math.cos(baseAng)
+              const y = 250 + R * Math.sin(baseAng)
+              return (
+                <g key={`zlab-${i}`} data-zodi-i={i} transform={`translate(${x}, ${y})`}>
+                  <text x={0} y={-12} textAnchor="middle"
+                    fontSize="11" fill={z.color} fontWeight="700"
+                    style={{ letterSpacing: 2 }}
+                    filter="url(#goldGlow)">{z.cn}</text>
+                  <text x={0} y={6} textAnchor="middle"
+                    fontSize="9" fill={z.color} opacity="0.75"
+                    fontFamily="'Courier New', monospace">
+                    {z.latin}
+                  </text>
+                </g>
+              )
+            })}
+          </g>
 
           {/* ===== 第二层：六芒星背景圆 + 双三角形 ===== */}
           <circle cx="250" cy="250" r="210" fill="url(#hexGrad)" stroke="rgba(212,181,232,0.4)" strokeWidth="1.5" />
 
-          {/* 六芒星三角形1（金色·顺时针 8 圈·末段精确回 0°） */}
-          <g>
-            <animateTransform attributeName="transform" type="rotate"
-              keyTimes="0.000000; 0.166667; 0.333333; 0.500000; 0.666667; 0.833333; 1.000000"
-              values="0.000 250 250; 564.706 250 250; 1129.412 250 250; 1694.118 250 250; 2258.824 250 250; 2823.529 250 250; 0.000 250 250"
-              calcMode="linear" dur="10s" fill="freeze" />
+          {/* 六芒星三角形1（金色·顺时针 8 圈·归零归顶点朝上） */}
+          <g data-role="hex-gold">
             <path d={d1} fill="none" stroke="url(#goldStroke)" strokeWidth="2.5" filter="url(#goldGlow)" />
             {/* 三角形顶点星 */}
             {TRI1.map((p, i) => (
@@ -668,12 +708,8 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
             ))}
           </g>
 
-          {/* 六芒星三角形2（青色·逆时针 7 圈·末段精确回 0°） */}
-          <g>
-            <animateTransform attributeName="transform" type="rotate"
-              keyTimes="0.000000; 0.166667; 0.333333; 0.500000; 0.666667; 0.833333; 1.000000"
-              values="0.000 250 250; -494.118 250 250; -988.235 250 250; -1482.353 250 250; -1976.471 250 250; -2470.588 250 250; 0.000 250 250"
-              calcMode="linear" dur="10s" fill="freeze" />
+          {/* 六芒星三角形2（青色·逆时针 7 圈·归零） */}
+          <g data-role="hex-cyan">
             <path d={d2} fill="none" stroke="rgba(168,230,207,0.8)" strokeWidth="2.5" filter="url(#goldGlow)" />
             {TRI2.map((p, i) => (
               <g key={i}>
@@ -690,20 +726,11 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
           />
 
           {/* ===== 第三层：先天八卦环 · 上乾下坤 ===== */}
-          {/* 虚线装饰环：4 圈·末段归零 */}
-          <circle cx="250" cy="250" r="120" fill="none" stroke="rgba(168,230,207,0.35)" strokeWidth="1" strokeDasharray="2 4" filter="url(#goldGlow)">
-            <animateTransform attributeName="transform" type="rotate"
-              keyTimes="0.000000; 0.166667; 0.333333; 0.500000; 0.666667; 0.833333; 1.000000"
-              values="0.000 250 250; 282.353 250 250; 564.706 250 250; 847.059 250 250; 1129.412 250 250; 1411.765 250 250; 0.000 250 250"
-              calcMode="linear" dur="10s" fill="freeze" />
-          </circle>
+          {/* 虚线装饰环：+4 圈·末段归零 */}
+          <circle data-role="bagua-dash" cx="250" cy="250" r="120" fill="none" stroke="rgba(168,230,207,0.35)" strokeWidth="1" strokeDasharray="2 4" filter="url(#goldGlow)" />
 
-          {/* 八卦符号 · 先天八卦固定方位（自身旋转 3 圈·末段精确回到上乾下坤·左离右坎） */}
-          <g>
-            <animateTransform attributeName="transform" type="rotate"
-              keyTimes="0.000000; 0.166667; 0.333333; 0.500000; 0.666667; 0.833333; 1.000000"
-              values="0.000 250 250; 211.765 250 250; 423.529 250 250; 635.294 250 250; 847.059 250 250; 1058.824 250 250; 0.000 250 250"
-              calcMode="linear" dur="10s" fill="freeze" />
+          {/* 八卦符号 · 先天八卦方位（整体 +3 圈·末段精确回到上乾下坤·左离右坎） */}
+          <g data-role="bagua-symbol">
             {BAGUA_YAO.map((yao, i) => {
               const a = (45 * i - 90) * Math.PI / 180
               const x = 250 + 100 * Math.cos(a)
@@ -739,12 +766,7 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
           })}
 
           {/* ===== 中心：太极图 ===== */}
-          <g>
-            {/* 太极整体：逆时针 2 圈·末段精确归零（阳上阴下） */}
-            <animateTransform attributeName="transform" type="rotate"
-              keyTimes="0.000000; 0.166667; 0.333333; 0.500000; 0.666667; 0.833333; 1.000000"
-              values="0.000 250 250; -141.176 250 250; -282.353 250 250; -423.529 250 250; -564.706 250 250; -705.882 250 250; 0.000 250 250"
-              calcMode="linear" dur="10s" fill="freeze" />
+          <g data-role="taiji">
             {/* 太极外圈光晕 */}
             <circle cx="250" cy="250" r="60" fill="none" stroke="rgba(255,215,0,0.6)" strokeWidth="2" filter="url(#strongGlow)" />
             <circle cx="250" cy="250" r="55" fill="none" stroke="rgba(255,215,0,0.3)" strokeWidth="1" />
