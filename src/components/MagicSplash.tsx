@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useReducer } from 'react'
 
 interface MagicSplashProps {
   onFinished: () => void
@@ -235,10 +235,10 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
       const cx = w / 2
       const cy = h / 2
 
-      if (elapsed < 1.2) setPhase('vortex')
-      else if (elapsed < 2.5) setPhase('summon')
-      else if (elapsed < 5) setPhase('reveal')
-      else if (elapsed < 6) setPhase('fadeout')
+      if (elapsed < 2) setPhase('vortex')
+      else if (elapsed < 4) setPhase('summon')
+      else if (elapsed < 8) setPhase('reveal')
+      else if (elapsed < 10) setPhase('fadeout')
 
       // 背景渐变
       const bgGradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(w, h) / 1.2)
@@ -249,8 +249,8 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
       ctx.fillStyle = bgGradient
       ctx.fillRect(0, 0, w, h)
 
-      // 漩涡星辰
-      const vortexIntensity = elapsed < 2 ? 1 : Math.max(0, 1 - (elapsed - 2) / 1)
+      // 漩涡星辰（10s 版：0→3s 维持峰值，3→4s 完全淡出）
+      const vortexIntensity = elapsed < 3 ? 1 : Math.max(0, 1 - (elapsed - 3) / 1)
       if (vortexIntensity > 0) {
         vortexStars.forEach((s) => {
           s.angle += s.speed * 2
@@ -288,34 +288,61 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
       // 布局参数：环半径保证在 SVG 法阵之外
       const zodiacRing = Math.min(w, h) / 2 - 86
       const zodiacScale = Math.max(60, Math.min(w, h) * 0.16)
-      // 出现进度：0s -> 2.5s 逐序点亮 12 宫
-      const reveal = Math.min(1, Math.max(0, (elapsed - 0.3) / 2.2))
-      // 连线淡入：1.5s -> 3s
-      const lineFade = Math.min(1, Math.max(0, (elapsed - 1.5) / 1.5))
-      // 淡出阶段
-      const fadeK = elapsed < 5 ? 1 : Math.max(0, 1 - (elapsed - 5) / 1)
+
+      // 12 星座整体环绕总旋转角（10s 版）：
+      //   0→8.5s  匀速旋转 5 圈（1800°）
+      //   8.5→10s  cubic ease-out 从 1800° 缓停精确归 0°
+      const T_TOTAL = 10
+      const T_SPIN = 8.5
+      const SPIN_DEG = 1800
+      let zRotDeg = 0
+      if (elapsed <= 0) zRotDeg = 0
+      else if (elapsed <= T_SPIN) {
+        zRotDeg = SPIN_DEG * (elapsed / T_SPIN)
+      } else if (elapsed <= T_TOTAL) {
+        const u = (elapsed - T_SPIN) / (T_TOTAL - T_SPIN)
+        // cubic ease out: f(u) = 1 - (1-u)^3，SPIN_DEG * (1 - ease) 从 1800 平滑收敛到 0
+        const ease = 1 - (1 - u) * (1 - u) * (1 - u)
+        zRotDeg = SPIN_DEG * (1 - ease)
+      } else {
+        zRotDeg = 0
+      }
+      const zRotRad = (zRotDeg * Math.PI) / 180
+      const cosR = Math.cos(zRotRad), sinR = Math.sin(zRotRad)
+
+      // 同时点亮：0.5s→2.5s 一次性显现 12 宫（与用户要求"统一把12个星座都点起来"一致）
+      const sectorReveal = Math.max(0, Math.min(1, (elapsed - 0.5) / 2))
+      // 连线淡入：2s→3.5s
+      const lineFade = Math.min(1, Math.max(0, (elapsed - 2) / 1.5))
+      // 淡出阶段：8s→10s
+      const fadeK = elapsed < 8 ? 1 : Math.max(0, 1 - (elapsed - 8) / 2)
 
       ZODIAC.forEach((zodiac, zi) => {
-        const sectorReveal = Math.max(0, Math.min(1, (reveal * 12 - zi) * 1.2))
         if (sectorReveal <= 0) return
-        const sectorAng = (30 * zi - 90) * Math.PI / 180
-        const sx = cx + Math.cos(sectorAng) * zodiacRing
-        const sy = cy + Math.sin(sectorAng) * zodiacRing
+        // 宫位基础角度 + 整体旋转 = 星图实时位置
+        const sectorAng = (30 * zi - 90) * Math.PI / 180 + zRotRad
+        const sxRaw = Math.cos(sectorAng) * zodiacRing
+        const syRaw = Math.sin(sectorAng) * zodiacRing
+        const sx = cx + sxRaw
+        const sy = cy + syRaw
 
         // 闪烁相位（每颗星独立 + 全局呼吸）
         const twinkleBase = 0.65 + 0.35 * Math.sin(elapsed * 2.2 + zi * 1.73)
 
-        // --- 恒星渲染 ---
+        // --- 恒星渲染（全部同时点亮）---
         const starPts: { x: number; y: number }[] = []
         zodiac.stars.forEach((st, si) => {
-          // 单颗星显现：随整体宫位进度 + 随机相位
-          const appearT = Math.max(0, Math.min(1, (sectorReveal * zodiac.stars.length - si) * 1.2))
+          // 单颗星全部同步显现
+          const appearT = sectorReveal
+          // 恒星相对宫位中心的局部坐标（按整体旋转角再次旋转，使得星图整体随环旋转）
+          const lx = st[0] * zodiacScale
+          const ly = st[1] * zodiacScale
+          const px = sx + lx * cosR - ly * sinR
+          const py = sy + lx * sinR + ly * cosR
           if (appearT <= 0) {
             starPts.push({ x: 0, y: 0 })
             return
           }
-          const px = sx + st[0] * zodiacScale
-          const py = sy + st[1] * zodiacScale
           starPts.push({ x: px, y: py })
 
           const mag = zodiac.mags[si] ?? 3
@@ -354,8 +381,8 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
         })
 
         // --- 经典连线（淡入·较暗） ---
-        if (lineFade > 0 && sectorReveal >= 0.4) {
-          const lAlpha = fadeK * lineFade * Math.min(1, sectorReveal) * 0.42
+        if (lineFade > 0) {
+          const lAlpha = fadeK * lineFade * sectorReveal * 0.42
           ctx.strokeStyle = hexToRgba(zodiac.color, lAlpha)
           ctx.lineWidth = 0.9
           ctx.beginPath()
@@ -372,8 +399,10 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
         if (sectorReveal > 0.6 && fadeK > 0.2) {
           zodiac.stars.forEach((st, si) => {
             if ((zodiac.mags[si] ?? 4) > 1.6) return
-            const px = sx + st[0] * zodiacScale
-            const py = sy + st[1] * zodiacScale
+            const lx = st[0] * zodiacScale
+            const ly = st[1] * zodiacScale
+            const px = sx + lx * cosR - ly * sinR
+            const py = sy + lx * sinR + ly * cosR
             const ringR = 8 + pulse * 6
             ctx.strokeStyle = hexToRgba(zodiac.color, fadeK * 0.35 * (0.6 + 0.4 * pulse))
             ctx.lineWidth = 1
@@ -394,8 +423,8 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
         ctx.beginPath(); ctx.arc(sx, sy, sz, 0, Math.PI * 2); ctx.fill()
       }
 
-      // 中心光球
-      const orbIntensity = Math.min(1, elapsed / 1.5) * (elapsed < 4 ? 1 : Math.max(0, 1 - (elapsed - 4) / 1))
+      // 中心光球（10s 版：0→1.8s 渐入，4→6s 淡出）
+      const orbIntensity = Math.min(1, elapsed / 1.8) * (elapsed < 6 ? 1 : Math.max(0, 1 - (elapsed - 6) / 1))
       if (orbIntensity > 0) {
         const r = 50 + Math.sin(elapsed * 4) * 15 + Math.min(60, elapsed * 25)
         const gg = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * 3)
@@ -414,8 +443,8 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
         ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill()
       }
 
-      // 魔法师召唤粒子
-      if (elapsed > 2.5 && elapsed < 3.5 && Math.random() < 0.4) {
+      // 魔法师召唤粒子（10s 版：2.5→5s 持续召唤）
+      if (elapsed > 2.5 && elapsed < 5 && Math.random() < 0.4) {
         for (let i = 0; i < 4; i++) {
           const a = Math.random() * Math.PI * 2
           const v = 2 + Math.random() * 3
@@ -429,14 +458,14 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
         }
       }
 
-      // 大爆发
-      if (elapsed > 3.5 && elapsed < 3.7 && particles.length < 200) {
-        for (let i = 0; i < 60; i++) {
-          const a = (i / 60) * Math.PI * 2 + Math.random() * 0.3
+      // 大爆发（10s 版：5→5.3s 触发，总粒子数适当放宽）
+      if (elapsed > 5 && elapsed < 5.3 && particles.length < 260) {
+        for (let i = 0; i < 70; i++) {
+          const a = (i / 70) * Math.PI * 2 + Math.random() * 0.3
           const v = 4 + Math.random() * 7
           particles.push({
             x: cx, y: cy, vx: Math.cos(a) * v, vy: Math.sin(a) * v,
-            life: 60 + Math.random() * 40, maxLife: 100,
+            life: 70 + Math.random() * 50, maxLife: 120,
             size: 2 + Math.random() * 3,
             color: `hsl(${[45, 280, 330, 160, 200][i % 5] + Math.random() * 20}, 90%, 70%)`,
             type: 'spark',
@@ -465,15 +494,16 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
         }
       })
 
-      if (elapsed > 5) {
-        ctx.fillStyle = `rgba(5, 2, 16, ${Math.min(1, (elapsed - 5) / 1)})`
+      // 末段黑色遮罩（10s 版：8→10s）
+      if (elapsed > 8) {
+        ctx.fillStyle = `rgba(5, 2, 16, ${Math.min(1, (elapsed - 8) / 2)})`
         ctx.fillRect(0, 0, w, h)
       }
 
       animationId = requestAnimationFrame(animate)
     }
     animationId = requestAnimationFrame(animate)
-    const finishTimer = setTimeout(onFinished, 6000)
+    const finishTimer = setTimeout(onFinished, 10000)
     return () => {
       cancelAnimationFrame(animationId)
       clearTimeout(finishTimer)
@@ -485,6 +515,63 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
   const circleOpacity = phase === 'vortex' ? 0 : phase === 'fadeout' ? 0 : 1
   const wizardOpacity = phase === 'vortex' ? 0 : 1
   const titleOpacity = phase === 'reveal' || phase === 'fadeout' ? 1 : 0
+
+  // 12 星座文字标签：每帧按 Canvas 同款 cubic ease-out 公式计算实时位置，
+  // 文字本身不旋转（永远正向可读），仅修改 (x,y) 对齐到星图的实时方位，
+  // 因此旋转的是"位置"而不是文字本身，结束角度精确归零。
+  function ZodiacLabelsAnimated() {
+    const [, force] = useReducer(x => x + 1, 0)
+    useEffect(() => {
+      let raf = 0
+      const loop = () => {
+        force()
+        raf = requestAnimationFrame(loop)
+      }
+      raf = requestAnimationFrame(loop)
+      return () => cancelAnimationFrame(raf)
+    }, [])
+    // 计算当前位置：用同一时间基准——自组件挂载起 + dur=10s 循环
+    const T_TOTAL = 10
+    const T_SPIN = 8.5
+    const SPIN_DEG = 1800
+    // 使用挂载起始时间相对于组件自身，为了与主动画完全同步，改用全局时间戳即可（但主动画是 startTimeRef）
+    // 这里直接用"首次渲染后 0"的模拟：将 startTimeRef 当前值读出来
+    const elapsed = (performance.now() - (startTimeRef.current || performance.now())) / 1000
+    let zRotDeg = 0
+    if (elapsed <= 0) zRotDeg = 0
+    else if (elapsed <= T_SPIN) zRotDeg = SPIN_DEG * (elapsed / T_SPIN)
+    else if (elapsed <= T_TOTAL) {
+      const u = (elapsed - T_SPIN) / (T_TOTAL - T_SPIN)
+      const ease = 1 - (1 - u) * (1 - u) * (1 - u)
+      zRotDeg = SPIN_DEG * (1 - ease)
+    } else zRotDeg = 0
+    const zRotRad = (zRotDeg * Math.PI) / 180
+    // 标签放置在 SVG r=258 环上（外圈 r=240 的 18px 外），保证文字不遮挡刻度
+    const R = 258
+    return (
+      <g opacity={circleOpacity * 0.55}>
+        {ZODIAC.map((z, i) => {
+          const baseAng = (30 * i - 90) * Math.PI / 180
+          const ang = baseAng + zRotRad
+          const x = 250 + R * Math.cos(ang)
+          const y = 250 + R * Math.sin(ang)
+          return (
+            <g key={`zlab-${i}`} transform={`translate(${x}, ${y})`}>
+              <text x={0} y={-12} textAnchor="middle"
+                fontSize="11" fill={z.color} fontWeight="700"
+                style={{ letterSpacing: 2 }}
+                filter="url(#goldGlow)">{z.cn}</text>
+              <text x={0} y={6} textAnchor="middle"
+                fontSize="9" fill={z.color} opacity="0.75"
+                fontFamily="'Courier New', monospace">
+                {z.latin}
+              </text>
+            </g>
+          )
+        })}
+      </g>
+    )
+  }
 
   return (
     <div
@@ -543,12 +630,11 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
 
           {/* ===== 最外圈：虚线旋转 + 12 星座定位点 ===== */}
           <g>
-            {/* 6秒内先飞速旋转3圈，末段缓停精确归位 0° */}
+            {/* 10秒：0→8.5s 匀速 +6圈(2160°)，末 1.5s cubic ease-out 精确归零 */}
             <animateTransform attributeName="transform" type="rotate"
-              values="0 250 250; 1080 250 250; 0 250 250"
-              keyTimes="0; 0.85; 1" calcMode="spline"
-              keySplines="0.12 0.78 0.28 1; 0.42 0 0.65 0.22"
-              dur="6s" fill="freeze" />
+              keyTimes="0.000000; 0.166667; 0.333333; 0.500000; 0.666667; 0.833333; 1.000000"
+              values="0.000 250 250; 423.529 250 250; 847.059 250 250; 1270.588 250 250; 1694.118 250 250; 2117.647 250 250; 0.000 250 250"
+              calcMode="linear" dur="10s" fill="freeze" />
             <circle cx="250" cy="250" r="240" fill="none" stroke="rgba(255,215,0,0.3)" strokeWidth="1.5" strokeDasharray="4 8" filter="url(#goldGlow)" />
             {/* 12 黄道星位刻度 */}
             {Array.from({ length: 12 }).map((_, i) => {
@@ -559,37 +645,19 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
                 <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" begin={`${i * 0.15}s`} repeatCount="indefinite" />
               </circle>
             })}
-            {/* 12 星座文字与拉丁缩写（固定角度不跟随外圈旋转） */}
           </g>
-          {ZODIAC.map((z, i) => {
-            const a = (30 * i - 90) * Math.PI / 180
-            const x = 250 + 240 * Math.cos(a)
-            const y = 250 + 240 * Math.sin(a)
-            return (
-              <g key={`zlab-${i}`} opacity="0.55">
-                <text x={x} y={y - 10} textAnchor="middle"
-                  fontSize="11" fill={z.color} fontWeight="700"
-                  style={{ letterSpacing: 2 }}
-                  filter="url(#goldGlow)">{z.cn}</text>
-                <text x={x} y={y + 8} textAnchor="middle"
-                  fontSize="9" fill={z.color} opacity="0.75"
-                  fontFamily="'Courier New', monospace">
-                  {z.latin}
-                </text>
-              </g>
-            )
-          })}
+          {/* 12 星座文字与拉丁缩写：按 Canvas +5 圈的实时旋转角定位，但文字本身保持静态可读角度 */}
+          <ZodiacLabelsAnimated />
 
           {/* ===== 第二层：六芒星背景圆 + 双三角形 ===== */}
           <circle cx="250" cy="250" r="210" fill="url(#hexGrad)" stroke="rgba(212,181,232,0.4)" strokeWidth="1.5" />
 
-          {/* 六芒星三角形1（顺时针·末段精确回 0°） */}
+          {/* 六芒星三角形1（金色·顺时针 8 圈·末段精确回 0°） */}
           <g>
             <animateTransform attributeName="transform" type="rotate"
-              values="0 250 250; 1800 250 250; 0 250 250"
-              keyTimes="0; 0.85; 1" calcMode="spline"
-              keySplines="0.1 0.8 0.25 1; 0.44 0 0.6 0.2"
-              dur="6s" fill="freeze" />
+              keyTimes="0.000000; 0.166667; 0.333333; 0.500000; 0.666667; 0.833333; 1.000000"
+              values="0.000 250 250; 564.706 250 250; 1129.412 250 250; 1694.118 250 250; 2258.824 250 250; 2823.529 250 250; 0.000 250 250"
+              calcMode="linear" dur="10s" fill="freeze" />
             <path d={d1} fill="none" stroke="url(#goldStroke)" strokeWidth="2.5" filter="url(#goldGlow)" />
             {/* 三角形顶点星 */}
             {TRI1.map((p, i) => (
@@ -600,13 +668,12 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
             ))}
           </g>
 
-          {/* 六芒星三角形2（逆时针·末段精确回 0°） */}
+          {/* 六芒星三角形2（青色·逆时针 7 圈·末段精确回 0°） */}
           <g>
             <animateTransform attributeName="transform" type="rotate"
-              values="0 250 250; -1800 250 250; 0 250 250"
-              keyTimes="0; 0.85; 1" calcMode="spline"
-              keySplines="0.1 0.8 0.25 1; 0.44 0 0.6 0.2"
-              dur="6s" fill="freeze" />
+              keyTimes="0.000000; 0.166667; 0.333333; 0.500000; 0.666667; 0.833333; 1.000000"
+              values="0.000 250 250; -494.118 250 250; -988.235 250 250; -1482.353 250 250; -1976.471 250 250; -2470.588 250 250; 0.000 250 250"
+              calcMode="linear" dur="10s" fill="freeze" />
             <path d={d2} fill="none" stroke="rgba(168,230,207,0.8)" strokeWidth="2.5" filter="url(#goldGlow)" />
             {TRI2.map((p, i) => (
               <g key={i}>
@@ -623,22 +690,25 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
           />
 
           {/* ===== 第三层：先天八卦环 · 上乾下坤 ===== */}
-          {/* 虚线装饰环：旋转后归零 */}
+          {/* 虚线装饰环：4 圈·末段归零 */}
           <circle cx="250" cy="250" r="120" fill="none" stroke="rgba(168,230,207,0.35)" strokeWidth="1" strokeDasharray="2 4" filter="url(#goldGlow)">
             <animateTransform attributeName="transform" type="rotate"
-              values="0 250 250; 1440 250 250; 0 250 250"
-              keyTimes="0; 0.85; 1" calcMode="spline"
-              keySplines="0.12 0.78 0.28 1; 0.42 0 0.65 0.22"
-              dur="6s" fill="freeze" />
+              keyTimes="0.000000; 0.166667; 0.333333; 0.500000; 0.666667; 0.833333; 1.000000"
+              values="0.000 250 250; 282.353 250 250; 564.706 250 250; 847.059 250 250; 1129.412 250 250; 1411.765 250 250; 0.000 250 250"
+              calcMode="linear" dur="10s" fill="freeze" />
           </circle>
 
-          {/* 八卦符号 · 先天八卦固定方位（无旋转·上乾下坤·左离右坎） */}
+          {/* 八卦符号 · 先天八卦固定方位（自身旋转 3 圈·末段精确回到上乾下坤·左离右坎） */}
           <g>
+            <animateTransform attributeName="transform" type="rotate"
+              keyTimes="0.000000; 0.166667; 0.333333; 0.500000; 0.666667; 0.833333; 1.000000"
+              values="0.000 250 250; 211.765 250 250; 423.529 250 250; 635.294 250 250; 847.059 250 250; 1058.824 250 250; 0.000 250 250"
+              calcMode="linear" dur="10s" fill="freeze" />
             {BAGUA_YAO.map((yao, i) => {
               const a = (45 * i - 90) * Math.PI / 180
               const x = 250 + 100 * Math.cos(a)
               const y = 250 + 100 * Math.sin(a)
-              // 宫位名：乾南 坤北 离东 坎西...（按索引对应）
+              // 宫位名：乾南 坤北 离东 坎西...（按先天八卦顺序）
               const palace = ['乾·南', '巽·西南', '坎·西', '艮·西北', '坤·北', '震·东北', '离·东', '兑·东南'][i]
               const isAxis = i === 0 || i === 4
               return (
@@ -655,7 +725,7 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
             })}
           </g>
 
-          {/* 八卦环与六芒星顶点之间的连接线 */}
+          {/* 八卦环与六芒星顶点之间的连接线（静态连接，不旋转） */}
           {HEX_VERTS.map((p, i) => {
             const dx = 250 - p.x
             const dy = 250 - p.y
@@ -670,11 +740,11 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
 
           {/* ===== 中心：太极图 ===== */}
           <g>
+            {/* 太极整体：逆时针 2 圈·末段精确归零（阳上阴下） */}
             <animateTransform attributeName="transform" type="rotate"
-              values="0 250 250; -1440 250 250; 0 250 250"
-              keyTimes="0; 0.85; 1" calcMode="spline"
-              keySplines="0.12 0.78 0.28 1; 0.42 0 0.65 0.22"
-              dur="6s" fill="freeze" />
+              keyTimes="0.000000; 0.166667; 0.333333; 0.500000; 0.666667; 0.833333; 1.000000"
+              values="0.000 250 250; -141.176 250 250; -282.353 250 250; -423.529 250 250; -564.706 250 250; -705.882 250 250; 0.000 250 250"
+              calcMode="linear" dur="10s" fill="freeze" />
             {/* 太极外圈光晕 */}
             <circle cx="250" cy="250" r="60" fill="none" stroke="rgba(255,215,0,0.6)" strokeWidth="2" filter="url(#strongGlow)" />
             <circle cx="250" cy="250" r="55" fill="none" stroke="rgba(255,215,0,0.3)" strokeWidth="1" />
