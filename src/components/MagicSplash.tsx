@@ -197,8 +197,12 @@ const d2 = TRI2.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') 
 
 export default function MagicSplash({ onFinished }: MagicSplashProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [phase, setPhase] = useState<'vortex' | 'summon' | 'reveal' | 'fadeout'>('vortex')
+  // 保留 phase 仅用于中间阶段显现控制（vortex / summon / reveal）；
+  // 结束态不再用 'fadeout' 渐隐——因为 8.5→10s 是缓停段，必须让用户清晰看见每一层都卡上 0°。
+  const [phase, setPhase] = useState<'vortex' | 'summon' | 'reveal'>('vortex')
   const startTimeRef = useRef(0)
+  // 结束跳转只用一次：避免 rAF 循环多次触发 onFinished
+  const finishedRef = useRef(false)
 
   // ===== 用于在 Canvas 主动画帧中同步驱动 SVG 旋转（消除 animateTransform 时钟不同步问题）=====
   // 各元素相对 Canvas 12 星座星图（5 圈 / 1800°）的转速比例。
@@ -290,8 +294,7 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
 
       if (elapsed < 2) setPhase('vortex')
       else if (elapsed < 4) setPhase('summon')
-      else if (elapsed < 8) setPhase('reveal')
-      else if (elapsed < 10) setPhase('fadeout')
+      else if (elapsed < 10) setPhase('reveal')
 
       // ===== 同步驱动 SVG 所有旋转元素：与 Canvas 同一 elapsed、同一 cubic ease-out，绝对锁步 =====
       // 第一次绑不上就每帧重试（React 挂载 DOM 需要一帧）
@@ -577,32 +580,64 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
         }
       })
 
-      // 末段黑色遮罩（10s 版：8→10s）
-      if (elapsed > 8) {
-        ctx.fillStyle = `rgba(5, 2, 16, ${Math.min(1, (elapsed - 8) / 2)})`
-        ctx.fillRect(0, 0, w, h)
+      // 不再画 8→10s 黑色渐隐遮罩；最终 0° 阵法必须干净可见，让用户看清"咔"卡上。
+
+      // ===== 精确结束：先把最后一帧牢牢钉在 elapsed=10 的 exact 0° 位 → 停留 180ms 给眼睛确认 → 再跳转 =====
+      // 只要 elapsed>=10 就立刻强制将所有旋转量 clamp 到 0°（再补一次），然后触发一次性的"卡上→跳转"流程。
+      if (elapsed >= 10 && !finishedRef.current) {
+        // 1) 最后一次同步所有 SVG transform 到精确 0°（防 rAF 采样在 10.016 等时刻产生浮点数漂移）
+        if (svgRotRef.current.outerRing) (svgRotRef.current.outerRing as any).setAttribute('transform', 'rotate(0 250 250)')
+        if (svgRotRef.current.hexGold) (svgRotRef.current.hexGold as any).setAttribute('transform', 'rotate(0 250 250)')
+        if (svgRotRef.current.hexCyan) (svgRotRef.current.hexCyan as any).setAttribute('transform', 'rotate(0 250 250)')
+        if (svgRotRef.current.baguaDash) (svgRotRef.current.baguaDash as any).setAttribute('transform', 'rotate(0 250 250)')
+        if (svgRotRef.current.baguaSymbol) (svgRotRef.current.baguaSymbol as any).setAttribute('transform', 'rotate(0 250 250)')
+        if (svgRotRef.current.taiji) (svgRotRef.current.taiji as any).setAttribute('transform', 'rotate(0 250 250)')
+        // 12 星座标签位置也 clamp 到 t=10 / zodiDeg=0 的正位
+        const R = 258
+        zodiacLabelGroupsRef.current.forEach((g, i) => {
+          if (!g) return
+          const baseAng = (30 * i - 90) * Math.PI / 180
+          const x = 250 + R * Math.cos(baseAng)
+          const y = 250 + R * Math.sin(baseAng)
+          g.setAttribute('transform', `translate(${x.toFixed(2)}, ${y.toFixed(2)})`)
+        })
+        // 2) 标记一次性结束，避免重复
+        finishedRef.current = true
+        // 3) 停 rAF 循环；下面 setTimeout 180ms 用来让浏览器至少 1~2 帧完整绘制 exact 0°，人眼看到"卡上"
+        cancelAnimationFrame(animationId)
+        setTimeout(() => {
+          // 4) 精准跳转到登录界面：保证是在"看见卡上"的这个视觉事件之后的同一回调里发生
+          onFinished()
+        }, 180)
+        return
       }
 
       animationId = requestAnimationFrame(animate)
     }
     animationId = requestAnimationFrame(animate)
-    const finishTimer = setTimeout(onFinished, 10000)
+    // 兜底：如果浏览器被切后台、rAF 暂停超过 10s，也能保证最多 11s 一定跳转；正常流程不会走到这儿。
+    const finishFallback = setTimeout(() => {
+      if (!finishedRef.current) {
+        finishedRef.current = true
+        onFinished()
+      }
+    }, 11000)
     return () => {
       cancelAnimationFrame(animationId)
-      clearTimeout(finishTimer)
+      clearTimeout(finishFallback)
       window.removeEventListener('resize', resize)
     }
   }, [onFinished])
 
-  // 阵法显示控制
-  const circleOpacity = phase === 'vortex' ? 0 : phase === 'fadeout' ? 0 : 1
+  // 阵法显示控制：全程可见（不再用 'fadeout' → 0 触发外层/SVG渐隐）。
+  const circleOpacity = 1
   const wizardOpacity = phase === 'vortex' ? 0 : 1
-  const titleOpacity = phase === 'reveal' || phase === 'fadeout' ? 1 : 0
+  const titleOpacity = phase === 'reveal' ? 1 : 0
 
   return (
     <div
       className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden"
-      style={{ background: '#050210', opacity: phase === 'fadeout' ? 0 : 1, transition: 'opacity 1s ease-out' }}
+      style={{ background: '#050210' }}
     >
       {/* Canvas粒子背景层 */}
       <canvas ref={canvasRef} className="absolute inset-0" />
