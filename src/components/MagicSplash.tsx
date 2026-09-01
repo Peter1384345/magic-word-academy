@@ -400,8 +400,10 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
       const sectorReveal = Math.max(0, Math.min(1, (elapsed - 0.5) / 2))
       // 连线淡入：2s→3.5s
       const lineFade = Math.min(1, Math.max(0, (elapsed - 2) / 1.5))
-      // 淡出阶段：8s→10s
-      const fadeK = elapsed < 8 ? 1 : Math.max(0, 1 - (elapsed - 8) / 2)
+      // 星图/连线/框的全局不透明度：不再 8→10s 淡出。
+      // 上一版 fadeK 把结束瞬间的星图 alpha 降到 0，导致"阵法归位但星图没了"，视觉上就是没卡上。
+      // 现在从淡入完成一直到跳转前，12 星座星图永远 100% 亮着，保证 10s 整的干净卡上画面完整。
+      const fadeK = 1
 
       ZODIAC.forEach((zodiac, zi) => {
         if (sectorReveal <= 0) return
@@ -582,17 +584,15 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
 
       // 不再画 8→10s 黑色渐隐遮罩；最终 0° 阵法必须干净可见，让用户看清"咔"卡上。
 
-      // ===== 精确结束：先把最后一帧牢牢钉在 elapsed=10 的 exact 0° 位 → 停留 180ms 给眼睛确认 → 再跳转 =====
-      // 只要 elapsed>=10 就立刻强制将所有旋转量 clamp 到 0°（再补一次），然后触发一次性的"卡上→跳转"流程。
+      // ===== 精确结束：last-frame 钉死 exact 0° → double-rAF 让浏览器合成 → 停留 150ms 让眼看到 → 立刻跳登录 =====
       if (elapsed >= 10 && !finishedRef.current) {
-        // 1) 最后一次同步所有 SVG transform 到精确 0°（防 rAF 采样在 10.016 等时刻产生浮点数漂移）
+        // 1) 把所有层的 DOM transform 都硬写 0，避免 rAF 采样在 10.016s 产生小数残差
         if (svgRotRef.current.outerRing) (svgRotRef.current.outerRing as any).setAttribute('transform', 'rotate(0 250 250)')
         if (svgRotRef.current.hexGold) (svgRotRef.current.hexGold as any).setAttribute('transform', 'rotate(0 250 250)')
         if (svgRotRef.current.hexCyan) (svgRotRef.current.hexCyan as any).setAttribute('transform', 'rotate(0 250 250)')
         if (svgRotRef.current.baguaDash) (svgRotRef.current.baguaDash as any).setAttribute('transform', 'rotate(0 250 250)')
         if (svgRotRef.current.baguaSymbol) (svgRotRef.current.baguaSymbol as any).setAttribute('transform', 'rotate(0 250 250)')
         if (svgRotRef.current.taiji) (svgRotRef.current.taiji as any).setAttribute('transform', 'rotate(0 250 250)')
-        // 12 星座标签位置也 clamp 到 t=10 / zodiDeg=0 的正位
         const R = 258
         zodiacLabelGroupsRef.current.forEach((g, i) => {
           if (!g) return
@@ -601,14 +601,17 @@ export default function MagicSplash({ onFinished }: MagicSplashProps) {
           const y = 250 + R * Math.sin(baseAng)
           g.setAttribute('transform', `translate(${x.toFixed(2)}, ${y.toFixed(2)})`)
         })
-        // 2) 标记一次性结束，避免重复
         finishedRef.current = true
-        // 3) 停 rAF 循环；下面 setTimeout 180ms 用来让浏览器至少 1~2 帧完整绘制 exact 0°，人眼看到"卡上"
+        // 2) 不再让主动画继续推进：循环就停在当前这个 exact 0° + full-alpha 的合成上
         cancelAnimationFrame(animationId)
-        setTimeout(() => {
-          // 4) 精准跳转到登录界面：保证是在"看见卡上"的这个视觉事件之后的同一回调里发生
-          onFinished()
-        }, 180)
+        // 3) double-rAF：确保浏览器把"Canvas 100%星图 + SVG 全 0°"这一帧完整提交到屏幕，
+        //    然后再留 150ms 的人眼确认停留，随后调用 onFinished 精准进登录。
+        //    （单 rAF 不够，浏览器在当前 animate 返回后只做 style/layout，真正的 composite 在下一个 rAF。）
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setTimeout(() => onFinished(), 150)
+          })
+        })
         return
       }
 
